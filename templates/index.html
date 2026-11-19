@@ -1,0 +1,310 @@
+{% extends "base.html" %}
+
+{% block title %}PlacementPulse | Student Skill & Placement Readiness Analysis System{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="relative overflow-hidden bg-gradient-to-b from-indigo-50/50 via-white to-slate-50 py-16 sm:py-24 border-b border-slate-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+            
+            <!-- Left Column: Copy & Actions -->
+            <div class="lg:col-span-7 space-y-6 text-center lg:text-left">
+                <div class="inline-flex items-center space-x-2 px-3 py-1.5 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-semibold">
+                    <span class="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span>AI-Powered Campus Placement Analytics 2026</span>
+                </div>
+                
+                <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-slate-900 tracking-tight leading-tight">
+                    Know Exactly How <span class="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">Placement Ready</span> You Truly Are.
+                </h1>
+                
+                <p class="text-lg text-slate-600 max-w-2xl mx-auto lg:mx-0 leading-relaxed">
+                    Evaluate your complete skill profile across Academics, DSA, Practical Projects, Aptitude, and Soft Skills. Get your <strong>Placement Readiness Index (PRI)</strong>, ML salary predictions, target role fitment, and a custom 30-day preparation roadmap.
+                </p>
+
+                <!-- Action Buttons -->
+                <div class="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start pt-2">
+                    {% if session.get('user_id') %}
+                        <a href="{{ url_for('assess') }}" class="inline-flex items-center justify-center px-6 py-3.5 text-base font-semibold text-white rounded-xl gradient-primary shadow-lg shadow-indigo-200 hover:shadow-indigo-300 hover:scale-[1.02] transition-smooth">
+                            <i class="fa-solid fa-calculator mr-2.5"></i>Start Readiness Assessment
+                        </a>
+                        <a href="{{ url_for('quiz') }}" class="inline-flex items-center justify-center px-6 py-3.5 text-base font-semibold text-slate-700 bg-white border border-slate-300 rounded-xl hover:bg-slate-50 hover:border-slate-400 transition-smooth shadow-sm">
+                            <i class="fa-solid fa-vial-circle-check mr-2.5 text-indigo-600"></i>Take Mock Skill Test
+                        </a>
+                    {% else %}
+                        <a href="{{ url_for('login') }}?next=/assess" class="inline-flex items-center justify-center px-6 py-3.5 text-base font-semibold text-white rounded-xl gradient-primary shadow-lg shadow-indigo-200 hover:shadow-indigo-300 hover:scale-[1.02] transition-smooth">
+                            <i class="fa-solid fa-right-to-bracket mr-2.5"></i>Sign In to Evaluate Skills
+                        </a>
+                        <a href="{{ url_for('signup') }}" class="inline-flex items-center justify-center px-6 py-3.5 text-base font-semibold text-slate-700 bg-white border border-slate-300 rounded-xl hover:bg-slate-50 hover:border-slate-400 transition-smooth shadow-sm">
+                            <i class="fa-solid fa-user-plus mr-2.5 text-indigo-600"></i>Student Sign Up Free
+                        </a>
+                    {% endif %}
+                    
+                    {% if session.get('user_role') == 'admin' %}
+                        <a href="{{ url_for('tpo_dashboard') }}" class="inline-flex items-center justify-center px-5 py-3.5 text-base font-bold text-amber-800 bg-amber-50 border border-amber-200 rounded-xl hover:bg-amber-100 transition-smooth">
+                            <i class="fa-solid fa-building-columns mr-2 text-amber-600"></i>TPO Dashboard
+                        </a>
+                    {% else %}
+                        <a href="{{ url_for('admin_login') }}" class="inline-flex items-center justify-center px-5 py-3.5 text-base font-medium text-slate-600 hover:text-amber-800 transition-smooth">
+                            <i class="fa-solid fa-shield-halved mr-2 text-amber-500"></i>TPO Officer Login
+                        </a>
+                    {% endif %}
+                </div>
+
+                <!-- Fast Stats Pill -->
+                <div class="pt-6 grid grid-cols-3 gap-4 border-t border-slate-200/80 max-w-lg mx-auto lg:mx-0">
+                    <div>
+                        <div class="text-2xl font-bold text-slate-900">5 Pillars</div>
+                        <div class="text-xs text-slate-500 font-medium">Holistic Evaluation</div>
+                    </div>
+                    <div>
+                        <div class="text-2xl font-bold text-indigo-600">6 Roles</div>
+                        <div class="text-xs text-slate-500 font-medium">Industry Benchmarks</div>
+                    </div>
+                    <div>
+                        <div class="text-2xl font-bold text-emerald-600">30-Day</div>
+                        <div class="text-xs text-slate-500 font-medium">Sprint Roadmap</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Interactive Preview Card -->
+            <div class="lg:col-span-5">
+                <div class="bg-white rounded-2xl shadow-xl shadow-slate-200/60 border border-slate-200 p-6 relative">
+                    <!-- Top Ribbon -->
+                    <div class="flex items-center justify-between pb-4 border-b border-slate-100">
+                        <div class="flex items-center space-x-2">
+                            <span class="w-3 h-3 rounded-full bg-rose-400 inline-block"></span>
+                            <span class="w-3 h-3 rounded-full bg-amber-400 inline-block"></span>
+                            <span class="w-3 h-3 rounded-full bg-emerald-400 inline-block"></span>
+                            <span class="text-xs font-semibold text-slate-400 ml-2">Live Candidate Diagnostic</span>
+                        </div>
+                        <span class="px-2.5 py-1 rounded-full text-xs font-bold tier-super-dream">
+                            <i class="fa-solid fa-star text-amber-500 mr-1"></i>Tier 1 Ready
+                        </span>
+                    </div>
+
+                    <!-- Readiness Score Circle preview -->
+                    <div class="py-6 text-center">
+                        <div class="inline-flex items-center justify-center w-32 h-32 rounded-full border-8 border-indigo-100 bg-indigo-50/50 relative shadow-inner">
+                            <div class="text-center">
+                                <span class="text-3xl font-extrabold text-indigo-600">86.4</span>
+                                <span class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider">PRI Score</span>
+                            </div>
+                        </div>
+                        <h4 class="mt-3 text-base font-bold text-slate-800">Super Dream Placement Ready</h4>
+                        <p class="text-xs text-slate-500">Expected Package: <span class="font-bold text-emerald-600 text-sm">18.5 - 28.0 LPA</span></p>
+                    </div>
+
+                    <!-- Mini Bars Preview -->
+                    <div class="space-y-3 pt-2 text-xs">
+                        <div>
+                            <div class="flex justify-between font-medium text-slate-600 mb-1">
+                                <span>Technical & DSA Mastery</span>
+                                <span class="font-bold text-indigo-600">31.5 / 35</span>
+                            </div>
+                            <div class="w-full bg-slate-100 rounded-full h-2">
+                                <div class="bg-indigo-600 h-2 rounded-full" style="width: 90%"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between font-medium text-slate-600 mb-1">
+                                <span>Projects & Live Deployments</span>
+                                <span class="font-bold text-purple-600">17.0 / 20</span>
+                            </div>
+                            <div class="w-full bg-slate-100 rounded-full h-2">
+                                <div class="bg-purple-600 h-2 rounded-full" style="width: 85%"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between font-medium text-slate-600 mb-1">
+                                <span>Aptitude & Logical Speed</span>
+                                <span class="font-bold text-emerald-600">13.2 / 15</span>
+                            </div>
+                            <div class="w-full bg-slate-100 rounded-full h-2">
+                                <div class="bg-emerald-500 h-2 rounded-full" style="width: 88%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card footer button -->
+                    <div class="mt-6 pt-4 border-t border-slate-100 text-center">
+                        <a href="{{ url_for('assess') }}" class="text-xs font-bold text-indigo-600 hover:text-indigo-800 flex items-center justify-center group">
+                            <span>Check your personal score now</span>
+                            <i class="fa-solid fa-arrow-right ml-1.5 group-hover:translate-x-1 transition-transform"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<!-- The 5 Pillars of Placement Readiness Section -->
+<section class="py-16 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center max-w-3xl mx-auto mb-14">
+            <h2 class="text-xs font-bold uppercase tracking-widest text-indigo-600 mb-2">Comprehensive Evaluation Architecture</h2>
+            <h3 class="text-3xl font-extrabold text-slate-900">The 5 Core Pillars of Placement Readiness</h3>
+            <p class="text-slate-600 mt-3 text-sm sm:text-base">
+                Placements are never just about CGPA or coding alone. Our proprietary Placement Readiness Index (PRI) measures the exact criteria recruiters evaluate during campus hiring drives.
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Pillar 1 -->
+            <div class="p-6 rounded-2xl border border-slate-200 bg-slate-50/50 card-hover transition-smooth">
+                <div class="w-12 h-12 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center text-xl mb-4">
+                    <i class="fa-solid fa-graduation-cap"></i>
+                </div>
+                <div class="flex justify-between items-center mb-1">
+                    <h4 class="font-bold text-slate-900 text-lg">1. Academic Foundation</h4>
+                    <span class="text-xs font-semibold px-2 py-0.5 bg-blue-50 text-blue-700 rounded-md">15 Pts</span>
+                </div>
+                <p class="text-slate-600 text-sm mt-2 leading-relaxed">
+                    Evaluates CGPA cutoffs, academic consistency across semesters, and active backlogs that determine eligibility for Tier-1 and Day-1 placement drives.
+                </p>
+            </div>
+
+            <!-- Pillar 2 -->
+            <div class="p-6 rounded-2xl border border-slate-200 bg-slate-50/50 card-hover transition-smooth">
+                <div class="w-12 h-12 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center text-xl mb-4">
+                    <i class="fa-solid fa-code"></i>
+                </div>
+                <div class="flex justify-between items-center mb-1">
+                    <h4 class="font-bold text-slate-900 text-lg">2. Technical & DSA Mastery</h4>
+                    <span class="text-xs font-semibold px-2 py-0.5 bg-indigo-50 text-indigo-700 rounded-md">35 Pts</span>
+                </div>
+                <p class="text-slate-600 text-sm mt-2 leading-relaxed">
+                    Assesses algorithmic depth, LeetCode / HackerRank problem counts, core programming languages, and Computer Science fundamentals (OS, DBMS, CN).
+                </p>
+            </div>
+
+            <!-- Pillar 3 -->
+            <div class="p-6 rounded-2xl border border-slate-200 bg-slate-50/50 card-hover transition-smooth">
+                <div class="w-12 h-12 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center text-xl mb-4">
+                    <i class="fa-solid fa-laptop-code"></i>
+                </div>
+                <div class="flex justify-between items-center mb-1">
+                    <h4 class="font-bold text-slate-900 text-lg">3. Practical Projects & Experience</h4>
+                    <span class="text-xs font-semibold px-2 py-0.5 bg-purple-50 text-purple-700 rounded-md">20 Pts</span>
+                </div>
+                <p class="text-slate-600 text-sm mt-2 leading-relaxed">
+                    Measures full-stack applications, real-world internships, hackathons, open-source GitHub contributions, and cloud-deployed live URLs.
+                </p>
+            </div>
+
+            <!-- Pillar 4 -->
+            <div class="p-6 rounded-2xl border border-slate-200 bg-slate-50/50 card-hover transition-smooth">
+                <div class="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center text-xl mb-4">
+                    <i class="fa-solid fa-brain"></i>
+                </div>
+                <div class="flex justify-between items-center mb-1">
+                    <h4 class="font-bold text-slate-900 text-lg">4. Aptitude & Reasoning Speed</h4>
+                    <span class="text-xs font-semibold px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded-md">15 Pts</span>
+                </div>
+                <p class="text-slate-600 text-sm mt-2 leading-relaxed">
+                    Quant, logical puzzles, and analytical reasoning required to clear the preliminary online screening rounds (Round 1) where 70% of applicants are filtered out.
+                </p>
+            </div>
+
+            <!-- Pillar 5 -->
+            <div class="p-6 rounded-2xl border border-slate-200 bg-slate-50/50 card-hover transition-smooth">
+                <div class="w-12 h-12 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center text-xl mb-4">
+                    <i class="fa-solid fa-comments"></i>
+                </div>
+                <div class="flex justify-between items-center mb-1">
+                    <h4 class="font-bold text-slate-900 text-lg">5. Soft Skills & Interview Articulation</h4>
+                    <span class="text-xs font-semibold px-2 py-0.5 bg-amber-50 text-amber-700 rounded-md">15 Pts</span>
+                </div>
+                <p class="text-slate-600 text-sm mt-2 leading-relaxed">
+                    Verbal fluency, technical communication, confidence, leadership experiences, and proficiency with the STAR behavioral interview framework.
+                </p>
+            </div>
+
+            <!-- Total Score Banner -->
+            <div class="p-6 rounded-2xl gradient-primary text-white flex flex-col justify-between card-hover transition-smooth shadow-lg shadow-indigo-100">
+                <div>
+                    <span class="text-xs font-bold uppercase tracking-wider bg-white/20 px-2.5 py-1 rounded-full">Output Engine</span>
+                    <h4 class="text-2xl font-extrabold mt-3">Placement Readiness Index (0 - 100)</h4>
+                    <p class="text-indigo-100 text-sm mt-2">
+                        Classifies you into Super Dream (Tier 1), Dream (Tier 2), Core (Tier 3), or Polish required, with ML package estimation.
+                    </p>
+                </div>
+                <div class="mt-6 pt-4 border-t border-white/20 flex items-center justify-between">
+                    <span class="text-xs font-medium text-indigo-100">Take test in under 3 mins</span>
+                    <a href="{{ url_for('assess') }}" class="px-3.5 py-1.5 bg-white text-indigo-700 rounded-lg text-xs font-bold hover:bg-indigo-50 transition">
+                        Evaluate Now
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- System Feature Highlights -->
+<section class="py-16 bg-slate-50 border-t border-slate-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="bg-white p-6 rounded-2xl border border-slate-200">
+                <div class="w-10 h-10 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center text-lg mb-4">
+                    <i class="fa-solid fa-bullseye"></i>
+                </div>
+                <h3 class="text-lg font-bold text-slate-800 mb-2">Role Fitment & Radar Analysis</h3>
+                <p class="text-sm text-slate-600">
+                    Compare your actual skills against real industry benchmarks for SDE, Full-Stack, Data Science, DevOps, QA, and Analyst roles.
+                </p>
+                <a href="{{ url_for('assess') }}" class="inline-block mt-4 text-xs font-semibold text-indigo-600 hover:text-indigo-800">
+                    Try Role Comparison &rarr;
+                </a>
+            </div>
+
+            <div class="bg-white p-6 rounded-2xl border border-slate-200">
+                <div class="w-10 h-10 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg mb-4">
+                    <i class="fa-solid fa-file-shield"></i>
+                </div>
+                <h3 class="text-lg font-bold text-slate-800 mb-2">ATS Resume Keyword Matcher</h3>
+                <p class="text-sm text-slate-600">
+                    Paste your resume or JD to scan for missing high-impact technical keywords and get instant recommendations before applying.
+                </p>
+                <a href="{{ url_for('resume_matcher') }}" class="inline-block mt-4 text-xs font-semibold text-emerald-600 hover:text-emerald-800">
+                    Scan Resume Keywords &rarr;
+                </a>
+            </div>
+
+            <div class="bg-white p-6 rounded-2xl border border-slate-200">
+                <div class="w-10 h-10 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center text-lg mb-4">
+                    <i class="fa-solid fa-users-gear"></i>
+                </div>
+                <h3 class="text-lg font-bold text-slate-800 mb-2">Recruiter & TPO Analytics</h3>
+                <p class="text-sm text-slate-600">
+                    Placement cell officers can monitor department-wide readiness, filter candidates by CTC tier, spot at-risk students, and export drive data.
+                </p>
+                <a href="{{ url_for('tpo_dashboard') }}" class="inline-block mt-4 text-xs font-semibold text-purple-600 hover:text-purple-800">
+                    View College Batch Stats &rarr;
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Call to action banner -->
+<section class="py-14 bg-indigo-900 text-white relative overflow-hidden">
+    <div class="max-w-5xl mx-auto px-4 text-center space-y-5 relative z-10">
+        <h2 class="text-3xl sm:text-4xl font-extrabold tracking-tight">Ready to Check Your Campus Placement Readiness?</h2>
+        <p class="text-indigo-200 max-w-2xl mx-auto text-base">
+            Get your comprehensive readiness scorecard, salary forecast, skill gap detection, and customized 30-day preparation sprint now.
+        </p>
+        <div class="pt-2 flex flex-wrap justify-center gap-4">
+            <a href="{{ url_for('assess') }}" class="px-8 py-3.5 rounded-xl bg-white text-indigo-900 font-bold hover:bg-indigo-50 shadow-lg hover:scale-105 transition-smooth">
+                Evaluate My Readiness Now
+            </a>
+            <a href="{{ url_for('quiz') }}" class="px-6 py-3.5 rounded-xl bg-indigo-800 text-white font-semibold border border-indigo-700 hover:bg-indigo-700 transition-smooth">
+                Take Placement Mock Quiz
+            </a>
+        </div>
+    </div>
+</section>
+{% endblock %}

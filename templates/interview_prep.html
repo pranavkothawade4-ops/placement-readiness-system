@@ -1,0 +1,180 @@
+{% extends "base.html" %}
+
+{% block title %}Placement Interview Prep & STAR Guide | PlacementPulse{% endblock %}
+
+{% block content %}
+<div class="py-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
+
+    <!-- Header -->
+    <div class="border-b border-slate-200 pb-5">
+        <div class="inline-flex items-center space-x-2 text-xs font-semibold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-md border border-indigo-100 mb-1">
+            <i class="fa-solid fa-graduation-cap"></i>
+            <span>Placement Interview Preparation Vault</span>
+        </div>
+        <h1 class="text-3xl font-extrabold text-slate-900">Placement Interview Mastery & Behavioral Guide</h1>
+        <p class="text-xs text-slate-500 mt-1">Ace both technical coding interviews and HR managerial behavioral rounds with proven frameworks.</p>
+    </div>
+
+    <!-- STAR BEHAVIORAL METHOD GUIDE -->
+    <div class="bg-gradient-to-br from-indigo-900 to-slate-900 text-white rounded-3xl p-6 sm:p-8 shadow-xl space-y-6">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-slate-700/80 pb-4">
+            <div>
+                <span class="text-xs font-bold text-indigo-300 uppercase tracking-widest">Behavioral Standard Framework</span>
+                <h2 class="text-2xl font-black mt-1">The S-T-A-R Interview Response Method</h2>
+            </div>
+            <span class="px-3 py-1 bg-white/10 text-indigo-200 text-xs font-semibold rounded-full border border-white/10">
+                Used by Amazon, Google, Microsoft HR
+            </span>
+        </div>
+        
+        <p class="text-xs sm:text-sm text-slate-300 leading-relaxed max-w-3xl">
+            Behavioral questions like <em>"Tell me about a time you faced a serious technical bug"</em> or <em>"How do you handle disagreement in a team?"</em> are evaluated using STAR. Follow this 4-step sequence:
+        </p>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-2">
+            
+            <div class="bg-white/10 border border-white/10 rounded-2xl p-4 space-y-2 backdrop-blur-xs">
+                <div class="w-8 h-8 rounded-lg bg-indigo-500 text-white flex items-center justify-center font-black text-sm">S</div>
+                <h3 class="font-bold text-sm text-white">Situation</h3>
+                <p class="text-xs text-slate-300 leading-relaxed">
+                    Set the context. Briefly describe the project, company, or challenge (Keep to 15-20 seconds).
+                </p>
+            </div>
+
+            <div class="bg-white/10 border border-white/10 rounded-2xl p-4 space-y-2 backdrop-blur-xs">
+                <div class="w-8 h-8 rounded-lg bg-purple-500 text-white flex items-center justify-center font-black text-sm">T</div>
+                <h3 class="font-bold text-sm text-white">Task</h3>
+                <p class="text-xs text-slate-300 leading-relaxed">
+                    Explain your specific role and responsibility in resolving that obstacle or deadline.
+                </p>
+            </div>
+
+            <div class="bg-white/10 border border-white/10 rounded-2xl p-4 space-y-2 backdrop-blur-xs">
+                <div class="w-8 h-8 rounded-lg bg-emerald-500 text-white flex items-center justify-center font-black text-sm">A</div>
+                <h3 class="font-bold text-sm text-white">Action (Core 60%)</h3>
+                <p class="text-xs text-slate-300 leading-relaxed">
+                    Detail the exact technical steps, tools, algorithms, or communication you executed personally.
+                </p>
+            </div>
+
+            <div class="bg-white/10 border border-white/10 rounded-2xl p-4 space-y-2 backdrop-blur-xs">
+                <div class="w-8 h-8 rounded-lg bg-amber-500 text-white flex items-center justify-center font-black text-sm">R</div>
+                <h3 class="font-bold text-sm text-white">Result & Metrics</h3>
+                <p class="text-xs text-slate-300 leading-relaxed">
+                    Quantify the outcome (e.g. "Reduced API latency by 40%", "Won 1st prize among 50 teams").
+                </p>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- CURATED TOP INTERVIEW QUESTIONS & MODEL ANSWERS -->
+    <div class="space-y-6">
+        <div class="flex items-center space-x-2">
+            <i class="fa-solid fa-list-check text-indigo-600 text-xl"></i>
+            <h2 class="text-2xl font-extrabold text-slate-900">Curated Placement Interview Question Vault</h2>
+        </div>
+
+        <div class="space-y-4">
+            
+            <!-- Question 1 -->
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 sm:p-6 space-y-3">
+                <div class="flex justify-between items-center text-xs">
+                    <span class="font-bold px-2 py-0.5 rounded bg-blue-50 text-blue-700">Technical &bull; Architecture</span>
+                    <span class="text-slate-400">Question 1</span>
+                </div>
+                <h3 class="text-base font-bold text-slate-900">
+                    "How does Hash Collision occur in a HashMap, and how is it resolved in Java / Python under the hood?"
+                </h3>
+                <div class="text-xs text-slate-600 bg-slate-50 p-4 rounded-xl border border-slate-100 space-y-2 leading-relaxed">
+                    <strong class="text-slate-800 block">Model Strategy:</strong>
+                    <p>Explain that hash collisions happen when two distinct keys yield identical bucket indexes via the hash function. Resolution occurs via <strong>Separate Chaining</strong> (Linked List, which upgrades to a Red-Black Tree in Java 8+ when bucket size exceeds 8 elements for O(log N) lookup) or <strong>Open Addressing</strong> (Linear probing, Quadratic probing, Double hashing).</p>
+                </div>
+            </div>
+
+            <!-- Question 2 -->
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 sm:p-6 space-y-3">
+                <div class="flex justify-between items-center text-xs">
+                    <span class="font-bold px-2 py-0.5 rounded bg-indigo-50 text-indigo-700">CS Core &bull; DBMS</span>
+                    <span class="text-slate-400">Question 2</span>
+                </div>
+                <h3 class="text-base font-bold text-slate-900">
+                    "What are the ACID properties in databases, and how does Isolation prevent Dirty Reads?"
+                </h3>
+                <div class="text-xs text-slate-600 bg-slate-50 p-4 rounded-xl border border-slate-100 space-y-2 leading-relaxed">
+                    <strong class="text-slate-800 block">Model Strategy:</strong>
+                    <p>Define Atomicity (all or nothing), Consistency (preserves valid states), Isolation (concurrent transactions don't interfere), Durability (persisted on disk). Explain that dirty reads happen when transaction A reads uncommitted data from transaction B. Setting the isolation level to <strong>Read Committed</strong> or <strong>Repeatable Read</strong> with two-phase locking (2PL) prevents dirty reads.</p>
+                </div>
+            </div>
+
+            <!-- Question 3 -->
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 sm:p-6 space-y-3">
+                <div class="flex justify-between items-center text-xs">
+                    <span class="font-bold px-2 py-0.5 rounded bg-purple-50 text-purple-700">HR & Behavioral</span>
+                    <span class="text-slate-400">Question 3</span>
+                </div>
+                <h3 class="text-base font-bold text-slate-900">
+                    "Tell me about a time you had a technical disagreement with a teammate on a project. How did you handle it?"
+                </h3>
+                <div class="text-xs text-slate-600 bg-slate-50 p-4 rounded-xl border border-slate-100 space-y-2 leading-relaxed">
+                    <strong class="text-slate-800 block">Model Strategy (STAR):</strong>
+                    <p><strong>Situation:</strong> While developing our college hackathon project, my teammate favored MongoDB while I suggested PostgreSQL. <strong>Task:</strong> We had to decide within 2 hours to meet the submission deadline. <strong>Action:</strong> Rather than arguing, I proposed benchmarking our core schema: we needed relational transactions and foreign key integrity. I wrote a quick proof-of-concept showing SQL join speeds. <strong>Result:</strong> Teammate agreed; our query response time was under 15ms and we won 2nd place.</p>
+                </div>
+            </div>
+
+            <!-- Question 4 -->
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 sm:p-6 space-y-3">
+                <div class="flex justify-between items-center text-xs">
+                    <span class="font-bold px-2 py-0.5 rounded bg-emerald-50 text-emerald-700">HR & Behavioral</span>
+                    <span class="text-slate-400">Question 4</span>
+                </div>
+                <h3 class="text-base font-bold text-slate-900">
+                    "Why do you want to join our company specifically, rather than other campus recruiters?"
+                </h3>
+                <div class="text-xs text-slate-600 bg-slate-50 p-4 rounded-xl border border-slate-100 space-y-2 leading-relaxed">
+                    <strong class="text-slate-800 block">Model Strategy:</strong>
+                    <p>Demonstrate customized company research. Reference their exact tech stack, recent engineering blogs, or business products. State: <em>"I admire how your team solved distributed caching at scale. My own projects in backend microservices align directly with your current product roadmap, and I'm eager to contribute from day one."</em></p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- PLACEMENT DAY CHECKLIST -->
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-8 space-y-4">
+        <div class="flex items-center space-x-2 text-slate-900">
+            <i class="fa-solid fa-clipboard-check text-emerald-600 text-xl"></i>
+            <h3 class="text-xl font-bold">Placement Day Readiness Checklist</h3>
+        </div>
+        <p class="text-xs text-slate-500">Ensure every item is checked 24 hours prior to Day-1 campus drive:</p>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 text-xs text-slate-700">
+            <label class="flex items-center space-x-2.5 p-3 rounded-xl bg-slate-50 border border-slate-100 cursor-pointer">
+                <input type="checkbox" checked class="w-4 h-4 rounded text-indigo-600">
+                <span>3 Hard Copies of ATS-optimized Resume</span>
+            </label>
+            <label class="flex items-center space-x-2.5 p-3 rounded-xl bg-slate-50 border border-slate-100 cursor-pointer">
+                <input type="checkbox" checked class="w-4 h-4 rounded text-indigo-600">
+                <span>Working Live URLs of Projects on Phone/Laptop</span>
+            </label>
+            <label class="flex items-center space-x-2.5 p-3 rounded-xl bg-slate-50 border border-slate-100 cursor-pointer">
+                <input type="checkbox" checked class="w-4 h-4 rounded text-indigo-600">
+                <span>GitHub repositories pinned with clean README files</span>
+            </label>
+            <label class="flex items-center space-x-2.5 p-3 rounded-xl bg-slate-50 border border-slate-100 cursor-pointer">
+                <input type="checkbox" checked class="w-4 h-4 rounded text-indigo-600">
+                <span>Government ID, College ID & Semester Grade Sheets</span>
+            </label>
+            <label class="flex items-center space-x-2.5 p-3 rounded-xl bg-slate-50 border border-slate-100 cursor-pointer">
+                <input type="checkbox" checked class="w-4 h-4 rounded text-indigo-600">
+                <span>Prepared 2 thoughtful questions to ask the interviewer</span>
+            </label>
+            <label class="flex items-center space-x-2.5 p-3 rounded-xl bg-slate-50 border border-slate-100 cursor-pointer">
+                <input type="checkbox" checked class="w-4 h-4 rounded text-indigo-600">
+                <span>Crisp 90-second "Tell Me About Yourself" elevator pitch</span>
+            </label>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

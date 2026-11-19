@@ -1,0 +1,599 @@
+{% extends "base.html" %}
+
+{% block title %}TPO Batch Placement Analytics Dashboard | PlacementPulse{% endblock %}
+
+{% block content %}
+<div class="py-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+
+    <!-- Header & Quick Actions -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-200 pb-5">
+        <div>
+            <div class="inline-flex items-center space-x-2 text-xs font-semibold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-md border border-indigo-100 mb-1">
+                <i class="fa-solid fa-building-columns"></i>
+                <span>Training & Placement Cell Portal</span>
+            </div>
+            <h1 class="text-3xl font-extrabold text-slate-900">Batch Placement Readiness Analytics</h1>
+            <p class="text-xs text-slate-500">Monitor candidate distribution, onboard & manage student accounts, approve signups, and filter drive cohorts.</p>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+            <!-- Add Student Button -->
+            <button onclick="toggleAddStudentModal()" class="inline-flex items-center px-4 py-2 text-xs font-bold rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm transition cursor-pointer">
+                <i class="fa-solid fa-user-plus mr-1.5"></i>+ Add Student / User
+            </button>
+            <button onclick="exportTableToCSV('tpoTable', 'Campus_Placement_Readiness_Batch_Report.csv')" class="inline-flex items-center px-4 py-2 text-xs font-semibold rounded-xl bg-emerald-600 text-white hover:bg-emerald-700 shadow-sm transition cursor-pointer">
+                <i class="fa-solid fa-file-csv mr-1.5"></i>Export CSV
+            </button>
+            <a href="{{ url_for('assess') }}" class="inline-flex items-center px-3.5 py-2 text-xs font-semibold rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition">
+                <i class="fa-solid fa-calculator mr-1.5"></i>Run Diagnostic
+            </a>
+        </div>
+    </div>
+
+    <!-- AGGREGATE KPI METRIC CARDS -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+            <div>
+                <span class="text-xs font-bold text-slate-400 block uppercase">Assessed Students</span>
+                <span class="text-3xl font-black text-slate-900 mt-1">{{ stats.total_students }}</span>
+                <span class="text-[11px] text-slate-500 block mt-0.5">Across all engineering branches</span>
+            </div>
+            <div class="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-xl">
+                <i class="fa-solid fa-user-graduate"></i>
+            </div>
+        </div>
+
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+            <div>
+                <span class="text-xs font-bold text-slate-400 block uppercase">Batch Avg PRI Score</span>
+                <span class="text-3xl font-black text-indigo-600 mt-1">{{ stats.avg_pri }} <span class="text-xs font-semibold text-slate-400">/ 100</span></span>
+                <span class="text-[11px] text-slate-500 block mt-0.5">Overall Readiness Index</span>
+            </div>
+            <div class="w-12 h-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center text-xl">
+                <i class="fa-solid fa-chart-pie"></i>
+            </div>
+        </div>
+
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+            <div>
+                <span class="text-xs font-bold text-slate-400 block uppercase">Placement Ready Rate</span>
+                <span class="text-3xl font-black text-emerald-600 mt-1">{{ stats.ready_percentage }}%</span>
+                <span class="text-[11px] text-slate-500 block mt-0.5">PRI >= 60 (Ready for Drives)</span>
+            </div>
+            <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl">
+                <i class="fa-solid fa-shield-halved"></i>
+            </div>
+        </div>
+
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+            <div>
+                <span class="text-xs font-bold text-slate-400 block uppercase">Avg Expected CTC</span>
+                <span class="text-3xl font-black text-amber-600 mt-1">&#8377; {{ stats.avg_ctc }} <span class="text-xs font-semibold text-slate-400">LPA</span></span>
+                <span class="text-[11px] text-slate-500 block mt-0.5">ML Package Forecast</span>
+            </div>
+            <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-xl">
+                <i class="fa-solid fa-briefcase"></i>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- TPO APPROVAL SYSTEM: PENDING STUDENT REGISTRATIONS -->
+    <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden p-6 sm:p-8 space-y-5">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-100 pb-4">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-lg shadow-xs">
+                    <i class="fa-solid fa-user-check"></i>
+                </div>
+                <div>
+                    <h2 class="text-xl font-bold text-slate-900">Student Account Registration Approvals</h2>
+                    <p class="text-xs text-slate-500">Review, approve, or reject student signup requests before they can log in.</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center space-x-2 text-xs">
+                <span class="px-3 py-1 rounded-full font-bold bg-amber-100 text-amber-800 border border-amber-200 flex items-center space-x-1.5">
+                    <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+                    <span>{{ approval_stats.pending }} Pending Approval</span>
+                </span>
+                <span class="px-3 py-1 rounded-full font-semibold bg-emerald-100 text-emerald-800">
+                    {{ approval_stats.approved }} Approved
+                </span>
+            </div>
+        </div>
+
+        {% if pending_students %}
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-xs">
+                    <thead>
+                        <tr class="border-b border-slate-200 bg-slate-50/70 text-slate-500 uppercase tracking-wider font-bold">
+                            <th class="py-3 px-3">Student Name</th>
+                            <th class="py-3 px-3">Email Address</th>
+                            <th class="py-3 px-3">Roll Number</th>
+                            <th class="py-3 px-3">Department</th>
+                            <th class="py-3 px-3">Registered Date</th>
+                            <th class="py-3 px-3">Status</th>
+                            <th class="py-3 px-3 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 text-slate-700">
+                        {% for u in pending_students %}
+                            <tr class="hover:bg-amber-50/30 transition">
+                                <td class="py-3 px-3 font-bold text-slate-900 flex items-center space-x-2">
+                                    <div class="w-7 h-7 rounded-full bg-indigo-100 text-indigo-700 font-bold flex items-center justify-center text-[11px]">
+                                        {{ u.name[:1].upper() }}
+                                    </div>
+                                    <span>{{ u.name }}</span>
+                                </td>
+                                <td class="py-3 px-3 font-mono text-slate-600">{{ u.email }}</td>
+                                <td class="py-3 px-3 font-mono font-bold text-indigo-600">{{ u.roll_no or 'N/A' }}</td>
+                                <td class="py-3 px-3">{{ u.department or 'N/A' }}</td>
+                                <td class="py-3 px-3 text-slate-400">{{ u.created_at[:16] if u.created_at else '' }}</td>
+                                <td class="py-3 px-3">
+                                    <span class="px-2.5 py-0.5 rounded-full font-bold text-[10px] bg-amber-100 text-amber-800 border border-amber-200">
+                                        <i class="fa-solid fa-clock mr-1"></i>Awaiting Approval
+                                    </span>
+                                </td>
+                                <td class="py-3 px-3 text-right space-x-2">
+                                    <form action="{{ url_for('tpo_approve_student', user_id=u.id) }}" method="POST" class="inline">
+                                        <button type="submit" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-xs transition cursor-pointer" title="Approve account for immediate login">
+                                            <i class="fa-solid fa-check mr-1"></i>Approve
+                                        </button>
+                                    </form>
+                                    <form action="{{ url_for('tpo_reject_student', user_id=u.id) }}" method="POST" class="inline">
+                                        <button type="submit" onclick="return confirm('Reject this student registration?')" class="px-3 py-1.5 rounded-lg bg-white border border-amber-300 hover:bg-amber-50 text-amber-700 font-bold text-xs transition cursor-pointer" title="Reject registration">
+                                            <i class="fa-solid fa-xmark mr-1"></i>Reject
+                                        </button>
+                                    </form>
+                                    <!-- Remove User Option -->
+                                    <form action="{{ url_for('tpo_delete_user', user_id=u.id) }}" method="POST" class="inline" onsubmit="return confirm('Permanently remove {{ u.name }} from the system?');">
+                                        <button type="submit" class="px-2.5 py-1.5 rounded-lg bg-white border border-rose-300 hover:bg-rose-50 text-rose-600 font-bold text-xs transition cursor-pointer" title="Delete user">
+                                            <i class="fa-solid fa-trash-can"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="p-6 rounded-2xl bg-emerald-50/60 border border-emerald-100 flex items-center justify-between text-xs text-emerald-900">
+                <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold">
+                        <i class="fa-solid fa-circle-check text-sm"></i>
+                    </div>
+                    <div>
+                        <span class="font-bold block">All Student Registrations Are Processed</span>
+                        <span class="text-emerald-700">There are no pending registrations waiting for TPO approval at this time.</span>
+                    </div>
+                </div>
+                <span class="font-bold text-emerald-800 bg-white px-3 py-1 rounded-lg border border-emerald-200">
+                    {{ approval_stats.approved }} Active Approved Students
+                </span>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- REGISTERED USER ACCOUNTS MANAGEMENT (ADD / REMOVE STUDENTS) -->
+    <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden p-6 sm:p-8 space-y-4">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-100 pb-4">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-lg shadow-xs">
+                    <i class="fa-solid fa-users-gear"></i>
+                </div>
+                <div>
+                    <h2 class="text-xl font-bold text-slate-900">Registered Student Accounts & Access Controls</h2>
+                    <p class="text-xs text-slate-500">Manage, inspect, or remove student logins and authorizations from the portal.</p>
+                </div>
+            </div>
+            <button onclick="toggleAddStudentModal()" class="px-3.5 py-1.5 text-xs font-bold rounded-xl gradient-primary text-white shadow-xs hover:scale-102 transition cursor-pointer">
+                <i class="fa-solid fa-user-plus mr-1"></i>Add New Student
+            </button>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-xs">
+                <thead>
+                    <tr class="border-b border-slate-200 bg-slate-50/70 text-slate-500 uppercase tracking-wider font-bold">
+                        <th class="py-3 px-3">Student Name</th>
+                        <th class="py-3 px-3">Roll No</th>
+                        <th class="py-3 px-3">Department</th>
+                        <th class="py-3 px-3">Email</th>
+                        <th class="py-3 px-3">Account Status</th>
+                        <th class="py-3 px-3">Placement Diagnostic</th>
+                        <th class="py-3 px-3 text-right">User Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 text-slate-700">
+                    {% for u in all_users %}
+                        <tr class="hover:bg-slate-50/60 transition">
+                            <td class="py-3 px-3 font-bold text-slate-900">{{ u.name }}</td>
+                            <td class="py-3 px-3 font-mono font-bold text-indigo-600">{{ u.roll_no or 'N/A' }}</td>
+                            <td class="py-3 px-3">{{ u.department or 'N/A' }}</td>
+                            <td class="py-3 px-3 font-mono text-slate-500">{{ u.email }}</td>
+                            <td class="py-3 px-3">
+                                {% if u.status == 'approved' %}
+                                    <span class="px-2.5 py-0.5 rounded-full font-bold text-[10px] bg-emerald-100 text-emerald-800 border border-emerald-200">
+                                        <i class="fa-solid fa-check mr-1"></i>Approved
+                                    </span>
+                                {% elif u.status == 'pending' %}
+                                    <span class="px-2.5 py-0.5 rounded-full font-bold text-[10px] bg-amber-100 text-amber-800 border border-amber-200">
+                                        <i class="fa-solid fa-clock mr-1"></i>Pending
+                                    </span>
+                                {% else %}
+                                    <span class="px-2.5 py-0.5 rounded-full font-bold text-[10px] bg-rose-100 text-rose-800 border border-rose-200">
+                                        <i class="fa-solid fa-xmark mr-1"></i>Rejected
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td class="py-3 px-3">
+                                {% if u.pri_score is not none %}
+                                    <span class="font-bold text-slate-800">PRI: {{ u.pri_score }}</span>
+                                    <span class="text-[10px] text-slate-400 ml-1">({{ u.tier.split('(')[0] if u.tier else '' }})</span>
+                                {% else %}
+                                    <span class="text-slate-400 italic">Not evaluated</span>
+                                {% endif %}
+                            </td>
+                            <td class="py-3 px-3 text-right">
+                                <!-- Remove User Button -->
+                                <form action="{{ url_for('tpo_delete_user', user_id=u.id) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure you want to permanently remove user {{ u.name }} ({{ u.email }}) and all related records?');">
+                                    <button type="submit" class="px-2.5 py-1 rounded-lg border border-rose-200 text-rose-600 hover:bg-rose-50 font-semibold text-xs transition cursor-pointer" title="Remove student user">
+                                        <i class="fa-solid fa-trash-can mr-1"></i>Remove
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- CHARTS SECTION: TIER DISTRIBUTION & DEPT PERFORMANCE -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        
+        <!-- Chart 1: Tier Distribution -->
+        <div class="lg:col-span-5 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+            <div>
+                <h3 class="text-base font-bold text-slate-900">Placement Tier Cohort Breakdown</h3>
+                <p class="text-xs text-slate-500">Distribution across Super Dream, Dream, Core, and Developing.</p>
+            </div>
+            <div class="relative h-64 flex items-center justify-center">
+                <canvas id="tierDonutChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Chart 2: Department Performance -->
+        <div class="lg:col-span-7 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+            <div>
+                <h3 class="text-base font-bold text-slate-900">Department Readiness Comparison</h3>
+                <p class="text-xs text-slate-500">Average Placement Readiness Index (PRI) by Academic Branch.</p>
+            </div>
+            <div class="relative h-64 flex items-center justify-center">
+                <canvas id="deptBarChart"></canvas>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- AT-RISK STUDENTS REMEDIAL CALLOUT -->
+    {% set at_risk = students | selectattr("pri_score", "lt", 55) | list %}
+    {% if at_risk %}
+        <div class="bg-amber-50/70 border border-amber-200 rounded-2xl p-5 space-y-3">
+            <div class="flex items-center space-x-2 text-amber-800">
+                <i class="fa-solid fa-triangle-exclamation text-base"></i>
+                <h3 class="text-sm font-bold">At-Risk Candidates Requiring Remedial Intervention ({{ at_risk|length }})</h3>
+            </div>
+            <p class="text-xs text-amber-700 leading-relaxed">
+                These candidates currently fall below the Day-1 placement benchmark due to active backlogs or low DSA/aptitude practice scores. Scheduling targeted aptitude crash courses is recommended.
+            </p>
+            <div class="flex flex-wrap gap-2 pt-1">
+                {% for st in at_risk %}
+                    <a href="{{ url_for('view_report', student_id=st.id) }}" class="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-lg bg-white border border-amber-300 text-xs font-semibold text-slate-800 hover:bg-amber-100 transition">
+                        <span>{{ st.name }} ({{ st.roll_no }})</span>
+                        <span class="text-rose-600 font-bold">PRI {{ st.pri_score }}</span>
+                    </a>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- FILTERABLE ROSTER TABLE -->
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden space-y-4 p-6">
+        
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-100 pb-4">
+            <div>
+                <h3 class="text-lg font-bold text-slate-900">Student Placement Readiness Roster</h3>
+                <p class="text-xs text-slate-500">Filter students to build shortlist cohorts for visiting recruiters.</p>
+            </div>
+            
+            <!-- Filters -->
+            <form action="{{ url_for('tpo_dashboard') }}" method="GET" class="flex flex-wrap items-center gap-2 text-xs">
+                <select name="department" class="px-2.5 py-1.5 rounded-lg border border-slate-300 text-xs bg-slate-50 font-medium">
+                    <option value="All" {% if selected_dept == 'All' %}selected{% endif %}>All Departments</option>
+                    <option value="Computer Science" {% if selected_dept == 'Computer Science' %}selected{% endif %}>Computer Science</option>
+                    <option value="Information Technology" {% if selected_dept == 'Information Technology' %}selected{% endif %}>Information Technology</option>
+                    <option value="Data Science" {% if selected_dept == 'Data Science' %}selected{% endif %}>Data Science</option>
+                    <option value="Electronics & Comm" {% if selected_dept == 'Electronics & Comm' %}selected{% endif %}>Electronics & Comm</option>
+                    <option value="Mechanical Engineering" {% if selected_dept == 'Mechanical Engineering' %}selected{% endif %}>Mechanical Engineering</option>
+                </select>
+
+                <select name="tier" class="px-2.5 py-1.5 rounded-lg border border-slate-300 text-xs bg-slate-50 font-medium">
+                    <option value="All" {% if selected_tier == 'All' %}selected{% endif %}>All Tiers</option>
+                    <option value="Super Dream (Tier 1 Product)" {% if selected_tier == 'Super Dream (Tier 1 Product)' %}selected{% endif %}>Super Dream (Tier 1)</option>
+                    <option value="Dream (Tier 2 High-Growth)" {% if selected_tier == 'Dream (Tier 2 High-Growth)' %}selected{% endif %}>Dream (Tier 2)</option>
+                    <option value="Core / Service (Tier 3)" {% if selected_tier == 'Core / Service (Tier 3)' %}selected{% endif %}>Core / Service (Tier 3)</option>
+                    <option value="Developing / Needs Polish" {% if selected_tier == 'Developing / Needs Polish' %}selected{% endif %}>Developing</option>
+                </select>
+
+                <input type="text" name="search" placeholder="Search name/roll..." value="{{ search_query or '' }}"
+                       class="px-2.5 py-1.5 rounded-lg border border-slate-300 text-xs w-36">
+
+                <button type="submit" class="px-3 py-1.5 rounded-lg bg-indigo-600 text-white font-bold hover:bg-indigo-700 transition">
+                    Filter
+                </button>
+            </form>
+        </div>
+
+        <!-- Table -->
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-xs" id="tpoTable">
+                <thead>
+                    <tr class="border-b border-slate-200 bg-slate-50/70 text-slate-500 uppercase tracking-wider font-bold">
+                        <th class="py-3 px-3">Roll No</th>
+                        <th class="py-3 px-3">Student Name</th>
+                        <th class="py-3 px-3">Branch</th>
+                        <th class="py-3 px-3">CGPA</th>
+                        <th class="py-3 px-3">Backlogs</th>
+                        <th class="py-3 px-3">PRI Score</th>
+                        <th class="py-3 px-3">Placement Tier</th>
+                        <th class="py-3 px-3">Exp. CTC</th>
+                        <th class="py-3 px-3 text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 text-slate-700">
+                    {% for st in students %}
+                        <tr class="hover:bg-slate-50/80 transition">
+                            <td class="py-3 px-3 font-mono font-bold text-indigo-600">{{ st.roll_no }}</td>
+                            <td class="py-3 px-3 font-bold text-slate-900">{{ st.name }}</td>
+                            <td class="py-3 px-3">{{ st.department }}</td>
+                            <td class="py-3 px-3 font-semibold">{{ st.cgpa }}</td>
+                            <td class="py-3 px-3">
+                                {% if st.backlogs == 0 %}
+                                    <span class="text-emerald-600 font-bold">0</span>
+                                {% else %}
+                                    <span class="text-rose-600 font-bold">{{ st.backlogs }}</span>
+                                {% endif %}
+                            </td>
+                            <td class="py-3 px-3">
+                                <span class="font-extrabold {% if st.pri_score >= 80 %}text-emerald-700{% elif st.pri_score >= 65 %}text-indigo-700{% elif st.pri_score >= 50 %}text-amber-700{% else %}text-rose-700{% endif %}">
+                                    {{ st.pri_score }}
+                                </span>
+                            </td>
+                            <td class="py-3 px-3">
+                                <span class="px-2 py-0.5 rounded-full font-bold text-[10px] {% if 'Super Dream' in st.tier %}tier-super-dream{% elif 'Dream' in st.tier %}tier-dream{% elif 'Core' in st.tier %}tier-core{% else %}tier-developing{% endif %}">
+                                    {{ st.tier.split('(')[0] }}
+                                </span>
+                            </td>
+                            <td class="py-3 px-3 font-semibold text-slate-800">
+                                &#8377; {{ st.expected_ctc_min }} - {{ st.expected_ctc_max }} LPA
+                            </td>
+                            <td class="py-3 px-3 text-right space-x-2">
+                                <a href="{{ url_for('view_report', student_id=st.id) }}" class="inline-flex items-center text-indigo-600 hover:text-indigo-900 font-bold hover:underline">
+                                    Report &rarr;
+                                </a>
+                                <!-- Remove student from placement roster -->
+                                <form action="{{ url_for('tpo_delete_student', student_id=st.id) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure you want to remove {{ st.name }} from the placement roster?');">
+                                    <button type="submit" class="text-rose-500 hover:text-rose-700 p-1 rounded hover:bg-rose-50 transition cursor-pointer" title="Remove student from roster">
+                                        <i class="fa-solid fa-trash-can"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+</div>
+
+<!-- ADD STUDENT MODAL -->
+<div id="addStudentModal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl border border-slate-200 space-y-6 my-8">
+        
+        <div class="flex justify-between items-center border-b border-slate-100 pb-4">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center text-white text-lg">
+                    <i class="fa-solid fa-user-plus"></i>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold text-slate-900">Add New Student / User Account</h3>
+                    <p class="text-xs text-slate-500">TPO direct onboarding with diagnostic initialization.</p>
+                </div>
+            </div>
+            <button onclick="toggleAddStudentModal()" class="text-slate-400 hover:text-slate-700 p-1 text-lg">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <form action="{{ url_for('tpo_add_student') }}" method="POST" class="space-y-4">
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Full Name *</label>
+                    <input type="text" name="name" required placeholder="e.g. Neha Verma"
+                           class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-indigo-500">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Roll / Reg Number *</label>
+                    <input type="text" name="roll_no" required placeholder="e.g. 22CS188"
+                           class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-indigo-500">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Email Address *</label>
+                    <input type="email" name="email" required placeholder="neha.verma@campus.edu"
+                           class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-indigo-500">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Temporary Password</label>
+                    <input type="text" name="password" value="Campus@123" required
+                           class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-mono focus:ring-2 focus:ring-indigo-500">
+                    <span class="text-[10px] text-slate-400">Default: Campus@123</span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Department *</label>
+                    <select name="department" required class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-indigo-500">
+                        <option value="Computer Science">Computer Science</option>
+                        <option value="Information Technology">Information Technology</option>
+                        <option value="Data Science">Data Science</option>
+                        <option value="Electronics & Comm">Electronics & Comm</option>
+                        <option value="Electrical Engineering">Electrical Engineering</option>
+                        <option value="Mechanical Engineering">Mechanical Engineering</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Current CGPA (out of 10) *</label>
+                    <input type="number" step="0.01" min="4.0" max="10.0" name="cgpa" value="7.8" required
+                           class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-indigo-500">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Active Backlogs</label>
+                    <select name="backlogs" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-indigo-500">
+                        <option value="0">0 (No Backlogs)</option>
+                        <option value="1">1 Backlog</option>
+                        <option value="2">2 Backlogs</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Target Placement Role</label>
+                    <select name="target_role" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-indigo-500">
+                        <option value="Software Development Engineer">Software Development Engineer</option>
+                        <option value="Full Stack Web Developer">Full Stack Web Developer</option>
+                        <option value="Data Scientist & AI Engineer">Data Scientist & AI Engineer</option>
+                        <option value="Cloud & DevOps Engineer">Cloud & DevOps Engineer</option>
+                        <option value="Data Analyst / Business Analyst">Data Analyst / Business Analyst</option>
+                        <option value="Quality Assurance & SDET">Quality Assurance & SDET</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Initial Authorization Status *</label>
+                    <select name="status" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-bold focus:ring-2 focus:ring-indigo-500 text-emerald-700 bg-emerald-50/50">
+                        <option value="approved" selected>Approved (Immediate Login Authorization)</option>
+                        <option value="pending">Pending (Requires Review)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="pt-3 border-t border-slate-100 flex justify-end space-x-3">
+                <button type="button" onclick="toggleAddStudentModal()" class="px-4 py-2 rounded-xl border border-slate-300 text-xs font-bold text-slate-700 hover:bg-slate-50 transition cursor-pointer">
+                    Cancel
+                </button>
+                <button type="submit" class="px-5 py-2 rounded-xl gradient-primary text-xs font-bold text-white shadow-md shadow-indigo-200 hover:scale-102 transition cursor-pointer">
+                    <i class="fa-solid fa-check mr-1.5"></i>Save & Onboard Student
+                </button>
+            </div>
+
+        </form>
+
+    </div>
+</div>
+
+<!-- Modal Toggle & Charts Script -->
+<script>
+function toggleAddStudentModal() {
+    const modal = document.getElementById('addStudentModal');
+    if (modal) {
+        modal.classList.toggle('hidden');
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // 1. Tier Donut Chart
+    const tierCtx = document.getElementById('tierDonutChart');
+    if (tierCtx) {
+        const tierCounts = {{ stats.tier_counts | tojson }};
+        const labels = Object.keys(tierCounts);
+        const dataVals = Object.values(tierCounts);
+
+        new Chart(tierCtx, {
+            type: 'doughnut',
+            data: {
+                labels: labels.map(l => l.split('(')[0]),
+                datasets: [{
+                    data: dataVals,
+                    backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#ef4444'],
+                    borderWidth: 2,
+                    borderColor: '#ffffff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { font: { size: 10, family: 'Plus Jakarta Sans' }, boxWidth: 10 }
+                    }
+                },
+                cutout: '68%'
+            }
+        });
+    }
+
+    // 2. Department Bar Chart
+    const deptCtx = document.getElementById('deptBarChart');
+    if (deptCtx) {
+        const deptAverages = {{ stats.dept_averages | tojson }};
+        const deptLabels = Object.keys(deptAverages);
+        const deptScores = deptLabels.map(k => deptAverages[k].avg_pri);
+
+        new Chart(deptCtx, {
+            type: 'bar',
+            data: {
+                labels: deptLabels,
+                datasets: [{
+                    label: 'Avg PRI Score',
+                    data: deptScores,
+                    backgroundColor: 'rgba(79, 70, 229, 0.8)',
+                    borderRadius: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        ticks: { font: { size: 10 } }
+                    },
+                    x: {
+                        ticks: { font: { size: 10 } }
+                    }
+                },
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

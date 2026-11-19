@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Placement Readiness & Skill Analysis System{% endblock %}</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#4f46e5',
+                        'primary-dark': '#4338ca',
+                        secondary: '#0ea5e9',
+                        accent: '#8b5cf6',
+                        dark: '#0f172a'
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}">
+</head>
+<body class="bg-slate-50 text-slate-800 flex flex-col min-h-screen selection:bg-indigo-500 selection:text-white">
+
+    <!-- Navbar -->
+    <nav class="bg-white/90 backdrop-blur-md sticky top-0 z-50 border-b border-slate-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <!-- Logo & Brand -->
+                <div class="flex items-center space-x-3">
+                    <a href="{{ url_for('index') }}" class="flex items-center space-x-3 group">
+                        <div class="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center text-white shadow-md shadow-indigo-200 group-hover:scale-105 transition-smooth">
+                            <i class="fa-solid fa-graduation-cap text-lg"></i>
+                        </div>
+                        <div>
+                            <span class="text-lg font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">PlacementPulse</span>
+                            <span class="hidden sm:inline-block text-xs font-semibold px-2 py-0.5 ml-1 bg-indigo-50 text-indigo-700 rounded-full border border-indigo-100">AI Readiness</span>
+                        </div>
+                    </a>
+                </div>
+
+                <!-- Desktop Navigation Links -->
+                <div class="hidden lg:flex items-center space-x-1">
+                    <a href="{{ url_for('index') }}" class="px-3 py-2 text-xs font-semibold rounded-lg hover:bg-slate-100 hover:text-indigo-600 transition-smooth {% if request.endpoint == 'index' %}text-indigo-600 bg-indigo-50/70{% else %}text-slate-600{% endif %}">
+                        <i class="fa-solid fa-house mr-1 opacity-70"></i>Home
+                    </a>
+                    
+                    <a href="{{ url_for('assess') }}" class="px-3 py-2 text-xs font-semibold rounded-lg hover:bg-slate-100 hover:text-indigo-600 transition-smooth {% if request.endpoint == 'assess' %}text-indigo-600 bg-indigo-50/70{% else %}text-slate-600{% endif %}">
+                        <i class="fa-solid fa-chart-pie mr-1 opacity-70"></i>Evaluate Skills
+                        {% if not session.get('user_id') %}<i class="fa-solid fa-lock text-[10px] ml-1 text-slate-400"></i>{% endif %}
+                    </a>
+                    
+                    <a href="{{ url_for('quiz') }}" class="px-3 py-2 text-xs font-semibold rounded-lg hover:bg-slate-100 hover:text-indigo-600 transition-smooth {% if request.endpoint == 'quiz' %}text-indigo-600 bg-indigo-50/70{% else %}text-slate-600{% endif %}">
+                        <i class="fa-solid fa-stopwatch mr-1 opacity-70"></i>Mock Quiz
+                        {% if not session.get('user_id') %}<i class="fa-solid fa-lock text-[10px] ml-1 text-slate-400"></i>{% endif %}
+                    </a>
+                    
+                    <a href="{{ url_for('resume_matcher') }}" class="px-3 py-2 text-xs font-semibold rounded-lg hover:bg-slate-100 hover:text-indigo-600 transition-smooth {% if request.endpoint == 'resume_matcher' %}text-indigo-600 bg-indigo-50/70{% else %}text-slate-600{% endif %}">
+                        <i class="fa-solid fa-file-invoice mr-1 opacity-70"></i>Resume Matcher
+                        {% if not session.get('user_id') %}<i class="fa-solid fa-lock text-[10px] ml-1 text-slate-400"></i>{% endif %}
+                    </a>
+                    
+                    <a href="{{ url_for('interview_prep') }}" class="px-3 py-2 text-xs font-semibold rounded-lg hover:bg-slate-100 hover:text-indigo-600 transition-smooth {% if request.endpoint == 'interview_prep' %}text-indigo-600 bg-indigo-50/70{% else %}text-slate-600{% endif %}">
+                        <i class="fa-solid fa-book-open mr-1 opacity-70"></i>Interview Prep
+                        {% if not session.get('user_id') %}<i class="fa-solid fa-lock text-[10px] ml-1 text-slate-400"></i>{% endif %}
+                    </a>
+                    
+                    <a href="{{ url_for('students_list') }}" class="px-3 py-2 text-xs font-semibold rounded-lg hover:bg-slate-100 hover:text-indigo-600 transition-smooth {% if request.endpoint == 'students_list' %}text-indigo-600 bg-indigo-50/70{% else %}text-slate-600{% endif %}">
+                        <i class="fa-solid fa-users mr-1 opacity-70"></i>Roster
+                        {% if not session.get('user_id') %}<i class="fa-solid fa-lock text-[10px] ml-1 text-slate-400"></i>{% endif %}
+                    </a>
+
+                    <!-- TPO Dashboard (Shown for Admins, or links to Admin Login for others) -->
+                    {% if session.get('user_role') == 'admin' %}
+                        <a href="{{ url_for('tpo_dashboard') }}" class="px-3 py-2 text-xs font-bold rounded-lg bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100 transition-smooth">
+                            <i class="fa-solid fa-building-columns mr-1 text-amber-600"></i>TPO Dashboard
+                        </a>
+                    {% else %}
+                        <a href="{{ url_for('admin_login') }}" title="Requires Separate TPO Admin Authentication" class="px-2.5 py-1.5 text-xs font-medium rounded-lg text-slate-500 hover:text-amber-800 hover:bg-amber-50/60 transition-smooth flex items-center space-x-1">
+                            <i class="fa-solid fa-shield-halved text-amber-500 text-[11px]"></i>
+                            <span>TPO Admin</span>
+                        </a>
+                    {% endif %}
+                </div>
+
+                <!-- Right Action / User Profile Area -->
+                <div class="hidden sm:flex items-center space-x-3">
+                    {% if session.get('user_id') %}
+                        <!-- User Profile Pill -->
+                        <div class="flex items-center space-x-2 pl-2 border-l border-slate-200">
+                            <div class="text-right">
+                                <div class="text-xs font-bold text-slate-800 leading-tight">{{ session.get('user_name', 'User') }}</div>
+                                <div class="text-[10px] font-semibold {% if session.get('user_role') == 'admin' %}text-amber-600{% else %}text-indigo-600{% endif %}">
+                                    {% if session.get('user_role') == 'admin' %}TPO Admin{% else %}Student{% endif %}
+                                </div>
+                            </div>
+                            <div class="w-8 h-8 rounded-full {% if session.get('user_role') == 'admin' %}bg-slate-900 text-amber-400{% else %}gradient-primary text-white{% endif %} flex items-center justify-center font-bold text-xs shadow-xs">
+                                {{ session.get('user_name', 'U')[:1].upper() }}
+                            </div>
+                            <a href="{{ url_for('logout') }}" title="Sign Out" class="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition text-sm ml-1">
+                                <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                            </a>
+                        </div>
+                    {% else %}
+                        <!-- Guest Sign In / Sign Up Buttons -->
+                        <div class="flex items-center space-x-2">
+                            <a href="{{ url_for('login') }}" class="px-3.5 py-2 text-xs font-bold text-slate-700 bg-white border border-slate-300 rounded-xl hover:bg-slate-50 hover:border-slate-400 transition shadow-2xs">
+                                <i class="fa-solid fa-right-to-bracket mr-1 text-indigo-600"></i>Sign In
+                            </a>
+                            <a href="{{ url_for('signup') }}" class="px-3.5 py-2 text-xs font-bold text-white rounded-xl gradient-primary shadow-sm shadow-indigo-200 hover:scale-[1.02] transition">
+                                <i class="fa-solid fa-user-plus mr-1"></i>Sign Up
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Mobile menu button -->
+                <div class="flex items-center lg:hidden">
+                    <button id="mobile-menu-btn" type="button" class="text-slate-500 hover:text-slate-700 p-2 rounded-lg focus:outline-none">
+                        <i class="fa-solid fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Navigation Menu -->
+        <div id="mobile-menu" class="hidden lg:hidden border-t border-slate-100 bg-white px-4 pt-2 pb-4 space-y-1 shadow-lg text-sm">
+            <a href="{{ url_for('index') }}" class="block px-3 py-2 rounded-lg font-medium text-slate-700 hover:bg-slate-100">Home</a>
+            <a href="{{ url_for('assess') }}" class="block px-3 py-2 rounded-lg font-medium text-slate-700 hover:bg-slate-100">
+                Evaluate Skills {% if not session.get('user_id') %}<span class="text-xs text-slate-400">(Login required)</span>{% endif %}
+            </a>
+            <a href="{{ url_for('quiz') }}" class="block px-3 py-2 rounded-lg font-medium text-slate-700 hover:bg-slate-100">
+                Mock Quiz {% if not session.get('user_id') %}<span class="text-xs text-slate-400">(Login required)</span>{% endif %}
+            </a>
+            <a href="{{ url_for('resume_matcher') }}" class="block px-3 py-2 rounded-lg font-medium text-slate-700 hover:bg-slate-100">
+                Resume Matcher {% if not session.get('user_id') %}<span class="text-xs text-slate-400">(Login required)</span>{% endif %}
+            </a>
+            <a href="{{ url_for('interview_prep') }}" class="block px-3 py-2 rounded-lg font-medium text-slate-700 hover:bg-slate-100">
+                Interview Prep {% if not session.get('user_id') %}<span class="text-xs text-slate-400">(Login required)</span>{% endif %}
+            </a>
+            <a href="{{ url_for('students_list') }}" class="block px-3 py-2 rounded-lg font-medium text-slate-700 hover:bg-slate-100">
+                Student Roster {% if not session.get('user_id') %}<span class="text-xs text-slate-400">(Login required)</span>{% endif %}
+            </a>
+            
+            {% if session.get('user_role') == 'admin' %}
+                <a href="{{ url_for('tpo_dashboard') }}" class="block px-3 py-2 rounded-lg font-bold text-amber-800 bg-amber-50">TPO Dashboard</a>
+            {% else %}
+                <a href="{{ url_for('admin_login') }}" class="block px-3 py-2 rounded-lg font-medium text-amber-700 hover:bg-amber-50">TPO Admin Login</a>
+            {% endif %}
+
+            <div class="pt-2 border-t border-slate-100">
+                {% if session.get('user_id') %}
+                    <div class="px-3 py-1 text-xs text-slate-500">Signed in as <strong>{{ session.get('user_name') }}</strong></div>
+                    <a href="{{ url_for('logout') }}" class="block px-3 py-2 rounded-lg font-bold text-rose-600 hover:bg-rose-50">Sign Out</a>
+                {% else %}
+                    <div class="flex gap-2 pt-2">
+                        <a href="{{ url_for('login') }}" class="flex-1 text-center py-2 rounded-xl bg-slate-100 font-bold text-slate-700">Sign In</a>
+                        <a href="{{ url_for('signup') }}" class="flex-1 text-center py-2 rounded-xl gradient-primary text-white font-bold">Sign Up</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <!-- Flash Messages Container -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4 w-full">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert-dismissible p-4 mb-3 rounded-2xl border flex items-center justify-between text-xs sm:text-sm transition-opacity duration-300 shadow-xs {% if category == 'success' %}bg-emerald-50 border-emerald-200 text-emerald-800{% elif category == 'danger' or category == 'error' %}bg-rose-50 border-rose-200 text-rose-800{% elif category == 'warning' %}bg-amber-50 border-amber-200 text-amber-800{% else %}bg-indigo-50 border-indigo-200 text-indigo-800{% endif %}">
+                        <div class="flex items-center space-x-2.5">
+                            <i class="fa-solid {% if category == 'success' %}fa-circle-check text-emerald-500 text-base{% elif category == 'danger' or category == 'error' %}fa-circle-exclamation text-rose-500 text-base{% elif category == 'warning' %}fa-triangle-exclamation text-amber-500 text-base{% else %}fa-circle-info text-indigo-500 text-base{% endif %}"></i>
+                            <span class="font-medium">{{ message }}</span>
+                        </div>
+                        <button onclick="this.parentElement.remove()" class="text-slate-400 hover:text-slate-700 text-sm ml-2">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <!-- Main Content Area -->
+    <main class="flex-grow">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 mt-16 py-8 text-center text-xs text-slate-500">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center space-x-2">
+                <div class="w-6 h-6 rounded-md gradient-primary flex items-center justify-center text-white text-xs">
+                    <i class="fa-solid fa-graduation-cap"></i>
+                </div>
+                <span class="font-semibold text-slate-700">PlacementPulse System</span>
+                <span class="text-slate-400">| Student Skill & Placement Readiness AI</span>
+            </div>
+            <div class="flex space-x-6 text-slate-500 text-xs">
+                <a href="{{ url_for('assess') }}" class="hover:text-indigo-600">Self Assessment</a>
+                <a href="{{ url_for('quiz') }}" class="hover:text-indigo-600">Placement Mock Test</a>
+                <a href="{{ url_for('resume_matcher') }}" class="hover:text-indigo-600">ATS Keyword Matcher</a>
+                <a href="{{ url_for('admin_login') }}" class="hover:text-indigo-600 text-amber-600 font-semibold">TPO Admin Portal</a>
+            </div>
+            <div class="text-xs text-slate-400">
+                Designed for Campus Placement Drives & Career Readiness
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    <script>
+        // Toggle mobile nav
+        const mobileBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        if (mobileBtn && mobileMenu) {
+            mobileBtn.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+        }
+    </script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

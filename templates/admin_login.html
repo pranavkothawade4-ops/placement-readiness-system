@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block title %}TPO Admin Portal Login | PlacementPulse{% endblock %}
+
+{% block content %}
+<div class="py-12 sm:py-16 max-w-md mx-auto px-4 sm:px-6">
+    
+    <!-- Admin Login Card -->
+    <div class="bg-white rounded-3xl border border-slate-200 shadow-2xl p-8 space-y-6 relative overflow-hidden">
+        
+        <!-- Top decorative ribbon -->
+        <div class="absolute top-0 inset-x-0 h-2 bg-gradient-to-r from-amber-500 via-rose-500 to-indigo-600"></div>
+
+        <div class="text-center space-y-2 pt-2">
+            <div class="w-12 h-12 mx-auto rounded-2xl bg-slate-900 text-amber-400 flex items-center justify-center text-xl shadow-lg shadow-slate-900/20">
+                <i class="fa-solid fa-shield-halved"></i>
+            </div>
+            <div class="inline-block px-2.5 py-0.5 rounded-full bg-amber-50 border border-amber-200 text-amber-800 text-[11px] font-bold uppercase tracking-wider">
+                Restricted Officer Access
+            </div>
+            <h1 class="text-2xl font-black text-slate-900">TPO Officer Sign In</h1>
+            <p class="text-xs text-slate-500">Authorized personnel only: Training & Placement Officers and College Administrators.</p>
+        </div>
+
+        <!-- Role switch bar -->
+        <div class="flex rounded-xl bg-slate-100 p-1 text-xs font-semibold">
+            <a href="{{ url_for('login') }}" class="flex-1 py-1.5 text-center rounded-lg text-slate-500 hover:text-slate-800 transition">
+                <i class="fa-solid fa-user-graduate mr-1"></i>Student
+            </a>
+            <a href="{{ url_for('admin_login') }}" class="flex-1 py-1.5 text-center rounded-lg bg-slate-900 text-amber-400 shadow-xs font-bold">
+                <i class="fa-solid fa-lock mr-1"></i>TPO Admin
+            </a>
+        </div>
+
+        <form action="{{ url_for('admin_login') }}" method="POST" class="space-y-4">
+            <input type="hidden" name="next" value="{{ next_url or '' }}">
+
+            <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1.5">TPO Officer Email</label>
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400">
+                        <i class="fa-solid fa-user-shield text-xs"></i>
+                    </span>
+                    <input type="email" name="email" required value="admin@campus.edu"
+                           class="w-full pl-9 pr-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-slate-900 focus:border-slate-900 font-medium">
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1.5">Administrative Password</label>
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400">
+                        <i class="fa-solid fa-key text-xs"></i>
+                    </span>
+                    <input type="password" name="password" required value="admin123"
+                           class="w-full pl-9 pr-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-slate-900 focus:border-slate-900 font-medium">
+                </div>
+            </div>
+
+            <div class="p-3 rounded-xl bg-amber-50/80 border border-amber-200 text-[11px] text-amber-900 leading-relaxed">
+                <i class="fa-solid fa-circle-info mr-1 text-amber-600"></i>
+                <strong>Default Credentials:</strong> <code class="font-bold">admin@campus.edu</code> &bull; Password: <code class="font-bold">admin123</code>
+            </div>
+
+            <div class="pt-2">
+                <button type="submit" class="w-full py-3 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-amber-400 text-sm font-bold shadow-md hover:scale-[1.01] transition-smooth cursor-pointer flex items-center justify-center space-x-2">
+                    <i class="fa-solid fa-unlock-keyhole"></i>
+                    <span>Authenticate as TPO Administrator</span>
+                </button>
+            </div>
+        </form>
+
+        <div class="pt-4 border-t border-slate-100 text-center text-xs text-slate-500">
+            Are you a student?
+            <a href="{{ url_for('login') }}" class="font-bold text-indigo-600 hover:text-indigo-800 underline ml-1">
+                Student Login Portal &rarr;
+            </a>
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}

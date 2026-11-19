@@ -1,0 +1,365 @@
+{% extends "base.html" %}
+
+{% block title %}Evaluate Placement Readiness | PlacementPulse{% endblock %}
+
+{% block content %}
+<div class="py-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+    
+    <!-- Header -->
+    <div class="mb-8 text-center sm:text-left flex flex-col sm:flex-row justify-between items-center gap-4 border-b border-slate-200 pb-6">
+        <div>
+            <h1 class="text-3xl font-extrabold text-slate-900">Student Placement Readiness Assessment</h1>
+            <p class="text-slate-600 text-sm mt-1">Complete your skills profile across the 5 evaluation pillars to generate your full diagnostic report.</p>
+        </div>
+        <!-- Quick Preset buttons -->
+        <div class="flex items-center space-x-2 bg-slate-100 p-1.5 rounded-xl border border-slate-200 text-xs">
+            <span class="font-semibold text-slate-500 px-2">Fill Preset:</span>
+            <button type="button" onclick="loadPreset('high')" class="px-2.5 py-1 bg-white hover:bg-indigo-50 text-indigo-700 font-medium rounded-lg shadow-sm border border-slate-200 transition">
+                Super Dream
+            </button>
+            <button type="button" onclick="loadPreset('mid')" class="px-2.5 py-1 bg-white hover:bg-indigo-50 text-indigo-700 font-medium rounded-lg shadow-sm border border-slate-200 transition">
+                Dream
+            </button>
+            <button type="button" onclick="loadPreset('developing')" class="px-2.5 py-1 bg-white hover:bg-indigo-50 text-indigo-700 font-medium rounded-lg shadow-sm border border-slate-200 transition">
+                Developing
+            </button>
+        </div>
+    </div>
+
+    <!-- Assessment Form -->
+    <form action="{{ url_for('assess') }}" method="POST" id="assessmentForm" class="space-y-8">
+        
+        <!-- SECTION 1: Personal & Academic Details -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-8 space-y-6">
+            <div class="flex items-center space-x-3 border-b border-slate-100 pb-4">
+                <div class="w-9 h-9 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center font-bold">1</div>
+                <div>
+                    <h2 class="text-lg font-bold text-slate-900">Personal & Academic Foundation (Pillar 1)</h2>
+                    <p class="text-xs text-slate-500">CGPA and active backlogs are primary filters for company shortlist eligibility.</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1.5">Full Name *</label>
+                    <input type="text" name="name" id="name" required placeholder="e.g. Rahul Sharma"
+                           class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1.5">Roll / Registration Number *</label>
+                    <input type="text" name="roll_no" id="roll_no" required placeholder="e.g. 22CS104"
+                           class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1.5">Email Address</label>
+                    <input type="email" name="email" id="email" placeholder="rahul@campus.edu"
+                           class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1.5">Department / Branch *</label>
+                    <select name="department" id="department" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-indigo-500">
+                        <option value="Computer Science">Computer Science & Engineering</option>
+                        <option value="Information Technology">Information Technology</option>
+                        <option value="Data Science">Data Science / AI</option>
+                        <option value="Electronics & Comm">Electronics & Communication (ECE)</option>
+                        <option value="Electrical Engineering">Electrical Engineering (EEE)</option>
+                        <option value="Mechanical Engineering">Mechanical Engineering</option>
+                        <option value="Civil Engineering">Civil Engineering</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1.5">Current CGPA (out of 10) *</label>
+                    <input type="number" step="0.01" min="4.0" max="10.0" name="cgpa" id="cgpa" required value="7.8"
+                           class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-indigo-500">
+                    <span class="text-[11px] text-slate-400">Typical product cutoff: >= 7.5 or 8.0</span>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1.5">Active Academic Backlogs *</label>
+                    <select name="backlogs" id="backlogs" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-indigo-500">
+                        <option value="0">0 (No Backlogs - 100% Eligible)</option>
+                        <option value="1">1 Active Backlog</option>
+                        <option value="2">2 Active Backlogs</option>
+                        <option value="3">3+ Active Backlogs</option>
+                    </select>
+                    <span class="text-[11px] text-slate-400">0 backlogs required for most Day-1 companies</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION 2: Technical Skills & DSA -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-8 space-y-6">
+            <div class="flex items-center space-x-3 border-b border-slate-100 pb-4">
+                <div class="w-9 h-9 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold">2</div>
+                <div>
+                    <h2 class="text-lg font-bold text-slate-900">Technical Mastery & DSA Problem Solving (Pillar 2)</h2>
+                    <p class="text-xs text-slate-500">Heaviest weightage pillar (35 points) evaluated in technical coding rounds.</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                <div class="sm:col-span-2 lg:col-span-1">
+                    <label class="block text-xs font-bold text-slate-700 mb-1.5">Target Job Role *</label>
+                    <select name="target_role" id="target_role" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-indigo-500 font-medium">
+                        <option value="Software Development Engineer">Software Development Engineer (SDE)</option>
+                        <option value="Full Stack Web Developer">Full Stack Web Developer</option>
+                        <option value="Data Scientist & AI Engineer">Data Scientist & AI Engineer</option>
+                        <option value="Cloud & DevOps Engineer">Cloud & DevOps Engineer</option>
+                        <option value="Data Analyst / Business Analyst">Data Analyst / Business Analyst</option>
+                        <option value="Quality Assurance & SDET">Quality Assurance & SDET</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1.5">DSA Problems Solved (LeetCode / GFG) *</label>
+                    <input type="number" min="0" max="2000" name="dsa_problems" id="dsa_problems" value="120" required
+                           class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-indigo-500">
+                    <span class="text-[11px] text-slate-400">Benchmark: 150-300+ for Tier-1 Product roles</span>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1.5">DSA & Algorithm Confidence (1 - 5) *</label>
+                    <select name="dsa_rating" id="dsa_rating" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-indigo-500">
+                        <option value="1">1 - Beginner (Basic syntax, simple loops)</option>
+                        <option value="2">2 - Elementary (Arrays, Strings, Linked Lists)</option>
+                        <option value="3" selected>3 - Intermediate (Trees, Stacks, Queues, Binary Search)</option>
+                        <option value="4">4 - Advanced (Graphs, Dynamic Programming, Heaps)</option>
+                        <option value="5">5 - Expert (Advanced DP, Segment Trees, Trie, Hard LC)</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1.5">Core Programming Languages (1 - 5) *</label>
+                    <select name="prog_rating" id="prog_rating" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-indigo-500">
+                        <option value="1">1 - Basic</option>
+                        <option value="2">2 - Familiar with 1 language</option>
+                        <option value="3" selected>3 - Proficient in C++, Java, or Python (OOP concepts)</option>
+                        <option value="4">4 - Strong multi-paradigm mastery & clean code</option>
+                        <option value="5">5 - Production-grade architecture & optimizations</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1.5">Database & SQL Proficiency (1 - 5) *</label>
+                    <select name="db_rating" id="db_rating" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-indigo-500">
+                        <option value="1">1 - Minimal SQL knowledge</option>
+                        <option value="2">2 - Basic SELECT & WHERE queries</option>
+                        <option value="3" selected>3 - Joins, Group By, Subqueries, Normalization</option>
+                        <option value="4">4 - Indexing, Transactions, ACID, NoSQL/Postgres</option>
+                        <option value="5">5 - Query optimization, Sharding, Replication</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1.5">CS Core Fundamentals (OS, CN, OOP) *</label>
+                    <select name="cs_core_rating" id="cs_core_rating" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-indigo-500">
+                        <option value="1">1 - Weak</option>
+                        <option value="2">2 - Elementary theory</option>
+                        <option value="3" selected>3 - Solid conceptual understanding</option>
+                        <option value="4">4 - Can explain threads, deadlocks, TCP/IP, caching</option>
+                        <option value="5">5 - System design level intuition</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION 3: Projects & Practical Experience -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-8 space-y-6">
+            <div class="flex items-center space-x-3 border-b border-slate-100 pb-4">
+                <div class="w-9 h-9 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center font-bold">3</div>
+                <div>
+                    <h2 class="text-lg font-bold text-slate-900">Projects, Internships & Practical Proof (Pillar 3)</h2>
+                    <p class="text-xs text-slate-500">Real-world applications validate your ability to contribute immediately to engineering teams.</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1.5">Completed Major/Minor Projects *</label>
+                    <input type="number" min="0" max="15" name="projects_count" id="projects_count" value="2" required
+                           class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-indigo-500">
+                    <span class="text-[11px] text-slate-400">Aim for at least 2 full-stack or domain projects</span>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1.5">Internship Experience (Months)</label>
+                    <input type="number" min="0" max="24" name="internship_months" id="internship_months" value="0"
+                           class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-indigo-500">
+                    <span class="text-[11px] text-slate-400">0 if fresh student without formal internship</span>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1.5">Hackathons Participated / Won</label>
+                    <input type="number" min="0" max="10" name="hackathons" id="hackathons" value="1"
+                           class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-indigo-500">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1.5">Relevant Technical Certifications</label>
+                    <input type="number" min="0" max="10" name="certifications" id="certifications" value="1"
+                           class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-indigo-500">
+                </div>
+
+                <div class="sm:col-span-2 flex flex-col justify-center space-y-3 pt-2">
+                    <label class="inline-flex items-center space-x-2 text-sm text-slate-700 cursor-pointer">
+                        <input type="checkbox" name="has_github" id="has_github" checked class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500">
+                        <span class="font-medium">Active GitHub Profile with public code repositories</span>
+                    </label>
+
+                    <label class="inline-flex items-center space-x-2 text-sm text-slate-700 cursor-pointer">
+                        <input type="checkbox" name="has_live_deployment" id="has_live_deployment" class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500">
+                        <span class="font-medium">Live Deployed Project URL (Render, Vercel, AWS, or Netlify)</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION 4: Aptitude & Soft Skills -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-8 space-y-6">
+            <div class="flex items-center space-x-3 border-b border-slate-100 pb-4">
+                <div class="w-9 h-9 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center font-bold">4</div>
+                <div>
+                    <h2 class="text-lg font-bold text-slate-900">Aptitude & Soft Skills (Pillars 4 & 5)</h2>
+                    <p class="text-xs text-slate-500">Quant, Logical reasoning, and behavioral communication (STAR method).</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1.5">Estimated / Mock Aptitude Score (%) *</label>
+                    <input type="number" min="0" max="100" name="aptitude_score" id="aptitude_score" value="70" required
+                           class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-indigo-500">
+                    <span class="text-[11px] text-slate-400">Can also take our live <a href="{{ url_for('quiz') }}" class="text-indigo-600 underline">Mock Quiz</a> to calibrate</span>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1.5">Verbal Communication & Fluency (1 - 5) *</label>
+                    <select name="comm_rating" id="comm_rating" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-indigo-500">
+                        <option value="1">1 - Hesitant / Needs English practice</option>
+                        <option value="2">2 - Basic conversational</option>
+                        <option value="3" selected>3 - Clear, coherent and structured</option>
+                        <option value="4">4 - Fluent, confident in group discussions</option>
+                        <option value="5">5 - Exceptional articulation & persuasive delivery</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1.5">Technical Interview Confidence (1 - 5) *</label>
+                    <select name="interview_confidence" id="interview_confidence" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-indigo-500">
+                        <option value="1">1 - Highly nervous</option>
+                        <option value="2">2 - Anxious when stuck</option>
+                        <option value="3" selected>3 - Can talk through problem-solving steps</option>
+                        <option value="4">4 - Comfortable on whiteboard/live pair coding</option>
+                        <option value="5">5 - Highly confident under pressure</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1.5">Completed Mock Interviews</label>
+                    <input type="number" min="0" max="20" name="mock_interviews_done" id="mock_interviews_done" value="1"
+                           class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-indigo-500">
+                </div>
+
+                <div class="sm:col-span-2 flex items-center pt-5">
+                    <label class="inline-flex items-center space-x-2 text-sm text-slate-700 cursor-pointer">
+                        <input type="checkbox" name="leadership_exp" id="leadership_exp" class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500">
+                        <span class="font-medium">College Club Lead / Team Lead / Hackathon Coordinator Experience</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="text-center pt-4">
+            <button type="submit" class="w-full sm:w-auto px-10 py-4 text-base font-bold text-white rounded-xl gradient-primary shadow-xl shadow-indigo-200 hover:shadow-indigo-300 hover:scale-[1.02] transition-smooth cursor-pointer">
+                <i class="fa-solid fa-chart-line mr-2"></i>Calculate Placement Readiness & Generate Report
+            </button>
+            <p class="text-xs text-slate-400 mt-2">Instant ML placement prediction, skill gap analysis & 30-day preparation sprint.</p>
+        </div>
+
+    </form>
+</div>
+
+<!-- Preset population script -->
+<script>
+function loadPreset(type) {
+    if (type === 'high') {
+        document.getElementById('name').value = 'Aditi Sharma';
+        document.getElementById('roll_no').value = '22CS999';
+        document.getElementById('email').value = 'aditi.s@campus.edu';
+        document.getElementById('department').value = 'Computer Science';
+        document.getElementById('cgpa').value = '9.2';
+        document.getElementById('backlogs').value = '0';
+        document.getElementById('target_role').value = 'Software Development Engineer';
+        document.getElementById('dsa_problems').value = '350';
+        document.getElementById('dsa_rating').value = '5';
+        document.getElementById('prog_rating').value = '5';
+        document.getElementById('db_rating').value = '4';
+        document.getElementById('cs_core_rating').value = '4';
+        document.getElementById('projects_count').value = '3';
+        document.getElementById('internship_months').value = '6';
+        document.getElementById('hackathons').value = '2';
+        document.getElementById('certifications').value = '2';
+        document.getElementById('has_github').checked = true;
+        document.getElementById('has_live_deployment').checked = true;
+        document.getElementById('aptitude_score').value = '90';
+        document.getElementById('comm_rating').value = '5';
+        document.getElementById('interview_confidence').value = '5';
+        document.getElementById('mock_interviews_done').value = '3';
+        document.getElementById('leadership_exp').checked = true;
+    } else if (type === 'mid') {
+        document.getElementById('name').value = 'Vikram Desai';
+        document.getElementById('roll_no').value = '22IT888';
+        document.getElementById('email').value = 'vikram.d@campus.edu';
+        document.getElementById('department').value = 'Information Technology';
+        document.getElementById('cgpa').value = '7.9';
+        document.getElementById('backlogs').value = '0';
+        document.getElementById('target_role').value = 'Full Stack Web Developer';
+        document.getElementById('dsa_problems').value = '140';
+        document.getElementById('dsa_rating').value = '3';
+        document.getElementById('prog_rating').value = '4';
+        document.getElementById('db_rating').value = '3';
+        document.getElementById('cs_core_rating').value = '3';
+        document.getElementById('projects_count').value = '2';
+        document.getElementById('internship_months').value = '2';
+        document.getElementById('hackathons').value = '1';
+        document.getElementById('certifications').value = '1';
+        document.getElementById('has_github').checked = true;
+        document.getElementById('has_live_deployment').checked = true;
+        document.getElementById('aptitude_score').value = '72';
+        document.getElementById('comm_rating').value = '4';
+        document.getElementById('interview_confidence').value = '3';
+        document.getElementById('mock_interviews_done').value = '1';
+        document.getElementById('leadership_exp').checked = false;
+    } else if (type === 'developing') {
+        document.getElementById('name').value = 'Rohan Gupta';
+        document.getElementById('roll_no').value = '22EC777';
+        document.getElementById('email').value = 'rohan.g@campus.edu';
+        document.getElementById('department').value = 'Electronics & Comm';
+        document.getElementById('cgpa').value = '6.4';
+        document.getElementById('backlogs').value = '1';
+        document.getElementById('target_role').value = 'Quality Assurance & SDET';
+        document.getElementById('dsa_problems').value = '35';
+        document.getElementById('dsa_rating').value = '2';
+        document.getElementById('prog_rating').value = '2';
+        document.getElementById('db_rating').value = '2';
+        document.getElementById('cs_core_rating').value = '2';
+        document.getElementById('projects_count').value = '1';
+        document.getElementById('internship_months').value = '0';
+        document.getElementById('hackathons').value = '0';
+        document.getElementById('certifications').value = '0';
+        document.getElementById('has_github').checked = false;
+        document.getElementById('has_live_deployment').checked = false;
+        document.getElementById('aptitude_score').value = '52';
+        document.getElementById('comm_rating').value = '2';
+        document.getElementById('interview_confidence').value = '2';
+        document.getElementById('mock_interviews_done').value = '0';
+        document.getElementById('leadership_exp').checked = false;
+    }
+}
+</script>
+{% endblock %}

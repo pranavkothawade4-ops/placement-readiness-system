@@ -1,0 +1,426 @@
+{% extends "base.html" %}
+
+{% block title %}Placement Readiness Report - {{ student.name }} | PlacementPulse{% endblock %}
+
+{% block content %}
+<div class="py-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+
+    <!-- Top Action Bar -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-200 pb-5 no-print">
+        <div>
+            <div class="inline-flex items-center space-x-2 text-xs font-semibold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-md border border-indigo-100 mb-1">
+                <i class="fa-solid fa-file-waveform"></i>
+                <span>Comprehensive Placement Diagnostic</span>
+            </div>
+            <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900">Placement Readiness Report</h1>
+            <p class="text-xs text-slate-500">Generated on {{ student.created_at[:10] if student.created_at else 'Today' }} for {{ student.name }} ({{ student.roll_no }})</p>
+        </div>
+        <div class="flex items-center space-x-3">
+            <button onclick="triggerPrintReport()" class="inline-flex items-center px-4 py-2 text-xs font-semibold rounded-xl bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 shadow-sm transition">
+                <i class="fa-solid fa-print mr-1.5 text-indigo-600"></i>Print / Save PDF
+            </button>
+            <a href="{{ url_for('assess') }}" class="inline-flex items-center px-4 py-2 text-xs font-semibold rounded-xl gradient-primary text-white shadow-sm hover:opacity-95 transition">
+                <i class="fa-solid fa-rotate-right mr-1.5"></i>Re-evaluate
+            </a>
+        </div>
+    </div>
+
+    <!-- STUDENT HEADER & EXECUTIVE SUMMARY -->
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-8">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+            
+            <!-- Left: Student Details -->
+            <div class="lg:col-span-4 border-b lg:border-b-0 lg:border-r border-slate-100 pb-6 lg:pb-0 lg:pr-8 space-y-4">
+                <div class="flex items-center space-x-4">
+                    <div class="w-14 h-14 rounded-2xl gradient-primary text-white flex items-center justify-center text-xl font-bold shadow-md shadow-indigo-100">
+                        {{ student.name[:2].upper() }}
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-extrabold text-slate-900">{{ student.name }}</h2>
+                        <p class="text-xs text-slate-500 font-mono">{{ student.roll_no }} &bull; {{ student.department }}</p>
+                        <span class="inline-block mt-1 text-[11px] font-semibold text-slate-600 bg-slate-100 px-2 py-0.5 rounded">
+                            Target: {{ student.target_role }}
+                        </span>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3 pt-2 text-xs">
+                    <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                        <span class="text-slate-400 block">Current CGPA</span>
+                        <span class="text-base font-extrabold text-slate-800">{{ student.cgpa }} / 10</span>
+                    </div>
+                    <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                        <span class="text-slate-400 block">Backlogs</span>
+                        <span class="text-base font-extrabold {% if student.backlogs == 0 %}text-emerald-600{% else %}text-rose-600{% endif %}">
+                            {{ student.backlogs }} {% if student.backlogs == 0 %}&#10003;{% else %}Active{% endif %}
+                        </span>
+                    </div>
+                    <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                        <span class="text-slate-400 block">DSA Solved</span>
+                        <span class="text-base font-extrabold text-indigo-600">{{ student.profile.get('dsa_problems', 0) }} Qs</span>
+                    </div>
+                    <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                        <span class="text-slate-400 block">Internship</span>
+                        <span class="text-base font-extrabold text-purple-600">{{ student.profile.get('internship_months', 0) }} Months</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Middle: Main PRI Score Gauge -->
+            <div class="lg:col-span-4 text-center px-4">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Placement Readiness Index</span>
+                <div class="mt-2 inline-flex items-center justify-center w-36 h-36 rounded-full border-8 {% if student.pri_score >= 80 %}border-emerald-200 bg-emerald-50/50{% elif student.pri_score >= 65 %}border-indigo-200 bg-indigo-50/50{% elif student.pri_score >= 50 %}border-amber-200 bg-amber-50/50{% else %}border-rose-200 bg-rose-50/50{% endif %} shadow-inner">
+                    <div class="text-center">
+                        <span class="text-4xl font-black {% if student.pri_score >= 80 %}text-emerald-700{% elif student.pri_score >= 65 %}text-indigo-700{% elif student.pri_score >= 50 %}text-amber-700{% else %}text-rose-700{% endif %}">
+                            {{ student.pri_score }}
+                        </span>
+                        <span class="block text-[11px] font-bold text-slate-400 uppercase tracking-widest">/ 100</span>
+                    </div>
+                </div>
+                
+                <div class="mt-3">
+                    <span class="inline-block px-3 py-1 rounded-full text-xs font-bold {% if 'Super Dream' in student.tier %}tier-super-dream{% elif 'Dream' in student.tier %}tier-dream{% elif 'Core' in student.tier %}tier-core{% else %}tier-developing{% endif %}">
+                        {{ student.tier }}
+                    </span>
+                </div>
+            </div>
+
+            <!-- Right: ML Predictions (Prob & Expected CTC) -->
+            <div class="lg:col-span-4 bg-gradient-to-br from-slate-900 to-indigo-950 text-white p-5 rounded-2xl shadow-md space-y-4">
+                <div class="flex items-center justify-between border-b border-slate-700 pb-2">
+                    <span class="text-xs font-bold text-indigo-300 uppercase tracking-wider">
+                        <i class="fa-solid fa-microchip mr-1.5"></i>AI Predictive Forecast
+                    </span>
+                    <span class="text-[10px] bg-indigo-500/30 text-indigo-200 px-2 py-0.5 rounded-full border border-indigo-400/30">ML Model</span>
+                </div>
+
+                <div>
+                    <div class="flex justify-between items-baseline mb-1">
+                        <span class="text-xs text-slate-300">Placement Probability</span>
+                        <span class="text-xl font-black text-emerald-400">{{ student.placement_prob }}%</span>
+                    </div>
+                    <div class="w-full bg-slate-800 rounded-full h-2">
+                        <div class="bg-gradient-to-r from-emerald-500 to-teal-400 h-2 rounded-full" style="width: {{ student.placement_prob }}%"></div>
+                    </div>
+                </div>
+
+                <div class="pt-2 border-t border-slate-800">
+                    <span class="text-xs text-slate-300 block mb-1">Estimated CTC Package</span>
+                    <div class="text-2xl font-black text-white">
+                        &#8377; {{ student.expected_ctc_min }} - {{ student.expected_ctc_max }} <span class="text-xs font-semibold text-indigo-300">LPA</span>
+                    </div>
+                    <span class="text-[11px] text-slate-400">Based on realistic campus hiring band parameters</span>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- 5 PILLARS DETAILED BREAKDOWN -->
+    <div>
+        <h3 class="text-lg font-bold text-slate-900 mb-4 flex items-center">
+            <i class="fa-solid fa-layer-group text-indigo-600 mr-2"></i>5-Pillar Readiness Score Breakdown
+        </h3>
+        
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+            <!-- Academic -->
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+                <div class="flex justify-between items-center text-xs text-slate-500">
+                    <span class="font-bold">Academic</span>
+                    <span>Max 15</span>
+                </div>
+                <div class="text-2xl font-black text-blue-600">{{ student.academic_score }}</div>
+                <div class="w-full bg-slate-100 rounded-full h-1.5">
+                    <div class="bg-blue-600 h-1.5 rounded-full" style="width: {{ (student.academic_score / 15) * 100 }}%"></div>
+                </div>
+                <p class="text-[11px] text-slate-500">CGPA ({{ student.cgpa }}) & {{ student.backlogs }} backlogs factor.</p>
+            </div>
+
+            <!-- Technical & DSA -->
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+                <div class="flex justify-between items-center text-xs text-slate-500">
+                    <span class="font-bold">Tech & DSA</span>
+                    <span>Max 35</span>
+                </div>
+                <div class="text-2xl font-black text-indigo-600">{{ student.technical_score }}</div>
+                <div class="w-full bg-slate-100 rounded-full h-1.5">
+                    <div class="bg-indigo-600 h-1.5 rounded-full" style="width: {{ (student.technical_score / 35) * 100 }}%"></div>
+                </div>
+                <p class="text-[11px] text-slate-500">{{ student.profile.get('dsa_problems', 0) }} problems & core CS theory.</p>
+            </div>
+
+            <!-- Projects & Experience -->
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+                <div class="flex justify-between items-center text-xs text-slate-500">
+                    <span class="font-bold">Projects & Exp</span>
+                    <span>Max 20</span>
+                </div>
+                <div class="text-2xl font-black text-purple-600">{{ student.project_score }}</div>
+                <div class="w-full bg-slate-100 rounded-full h-1.5">
+                    <div class="bg-purple-600 h-1.5 rounded-full" style="width: {{ (student.project_score / 20) * 100 }}%"></div>
+                </div>
+                <p class="text-[11px] text-slate-500">{{ student.profile.get('projects_count', 0) }} apps, deployment & intern.</p>
+            </div>
+
+            <!-- Aptitude -->
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+                <div class="flex justify-between items-center text-xs text-slate-500">
+                    <span class="font-bold">Aptitude</span>
+                    <span>Max 15</span>
+                </div>
+                <div class="text-2xl font-black text-emerald-600">{{ student.aptitude_score }}</div>
+                <div class="w-full bg-slate-100 rounded-full h-1.5">
+                    <div class="bg-emerald-600 h-1.5 rounded-full" style="width: {{ (student.aptitude_score / 15) * 100 }}%"></div>
+                </div>
+                <p class="text-[11px] text-slate-500">Quant, logical & puzzle solving speed.</p>
+            </div>
+
+            <!-- Soft Skills -->
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+                <div class="flex justify-between items-center text-xs text-slate-500">
+                    <span class="font-bold">Soft Skills</span>
+                    <span>Max 15</span>
+                </div>
+                <div class="text-2xl font-black text-amber-600">{{ student.soft_skill_score }}</div>
+                <div class="w-full bg-slate-100 rounded-full h-1.5">
+                    <div class="bg-amber-600 h-1.5 rounded-full" style="width: {{ (student.soft_skill_score / 15) * 100 }}%"></div>
+                </div>
+                <p class="text-[11px] text-slate-500">Communication, STAR responses & HR.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- RADAR BENCHMARK COMPARISON & ROLE FITMENT -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        
+        <!-- Radar Chart Container -->
+        <div class="lg:col-span-7 bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+            <div class="flex justify-between items-center mb-4">
+                <div>
+                    <h3 class="text-lg font-bold text-slate-900">Candidate vs Target Role Benchmark</h3>
+                    <p class="text-xs text-slate-500">Comparing your profile with {{ role_analysis.target_role }} industry standards.</p>
+                </div>
+                <span class="text-xs px-2.5 py-1 bg-indigo-50 text-indigo-700 font-bold rounded-lg border border-indigo-100">
+                    Radar Fitment
+                </span>
+            </div>
+            
+            <div class="relative w-full h-72 sm:h-80 flex items-center justify-center">
+                <canvas id="roleRadarChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Role Match Percentages -->
+        <div class="lg:col-span-5 bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
+            <div>
+                <h3 class="text-lg font-bold text-slate-900">Industry Role Fitment Scores</h3>
+                <p class="text-xs text-slate-500">How well your current skill profile matches 6 primary tech career tracks:</p>
+            </div>
+
+            <div class="space-y-3 pt-2">
+                {% for r in role_analysis.all_role_matches %}
+                    <div class="p-3 rounded-xl border {% if r.is_target %}border-indigo-300 bg-indigo-50/40{% else %}border-slate-100 bg-slate-50/50{% endif %}">
+                        <div class="flex justify-between items-center mb-1 text-xs">
+                            <span class="font-bold text-slate-800">
+                                {{ r.role }}
+                                {% if r.is_target %}<span class="text-[10px] ml-1 text-indigo-600 font-semibold">(Your Target)</span>{% endif %}
+                            </span>
+                            <span class="font-extrabold {% if r.match_pct >= 80 %}text-emerald-600{% elif r.match_pct >= 65 %}text-indigo-600{% else %}text-slate-600{% endif %}">
+                                {{ r.match_pct }}% Match
+                            </span>
+                        </div>
+                        <div class="w-full bg-slate-200 rounded-full h-2">
+                            <div class="h-2 rounded-full {% if r.match_pct >= 80 %}bg-emerald-500{% elif r.match_pct >= 65 %}bg-indigo-600{% else %}bg-slate-400{% endif %}" style="width: {{ r.match_pct }}%"></div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+    </div>
+
+    <!-- SKILL GAPS & STRENGTHS -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        
+        <!-- Identified Gaps & Weaknesses -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
+            <div class="flex items-center space-x-2 text-rose-600">
+                <i class="fa-solid fa-triangle-exclamation text-lg"></i>
+                <h3 class="text-lg font-bold text-slate-900">Identified Critical Skill Gaps</h3>
+            </div>
+            <p class="text-xs text-slate-500">Specific bottlenecks that could risk interview rejection if left unaddressed:</p>
+
+            <div class="space-y-3 pt-1">
+                {% if gaps_and_roadmap.gaps %}
+                    {% for gap in gaps_and_roadmap.gaps %}
+                        <div class="p-4 rounded-xl border border-rose-100 bg-rose-50/30 space-y-1.5">
+                            <div class="flex justify-between items-center">
+                                <span class="text-xs font-bold text-rose-800">{{ gap.title }}</span>
+                                <span class="text-[10px] font-bold px-2 py-0.5 rounded {% if gap.severity == 'High' %}bg-rose-100 text-rose-700{% else %}bg-amber-100 text-amber-700{% endif %}">
+                                    {{ gap.severity }} Severity
+                                </span>
+                            </div>
+                            <p class="text-xs text-slate-600 leading-relaxed">{{ gap.description }}</p>
+                            <div class="text-xs font-semibold text-indigo-700 bg-white p-2 rounded-lg border border-indigo-100 mt-2">
+                                <i class="fa-solid fa-lightbulb text-amber-500 mr-1"></i><strong>Action:</strong> {{ gap.action }}
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="p-4 rounded-xl bg-emerald-50 text-emerald-800 text-sm">
+                        <i class="fa-solid fa-check-circle mr-2"></i>No critical bottlenecks detected! Your skills meet or exceed all baseline thresholds.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- High-Impact Strengths -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
+            <div class="flex items-center space-x-2 text-emerald-600">
+                <i class="fa-solid fa-circle-check text-lg"></i>
+                <h3 class="text-lg font-bold text-slate-900">High-Impact Candidate Strengths</h3>
+            </div>
+            <p class="text-xs text-slate-500">Key competitive differentiators to emphasize on your resume and during interviews:</p>
+
+            <div class="space-y-3 pt-1">
+                {% if gaps_and_roadmap.strengths %}
+                    {% for strength in gaps_and_roadmap.strengths %}
+                        <div class="p-3.5 rounded-xl border border-emerald-100 bg-emerald-50/40 flex items-start space-x-3 text-xs text-emerald-900">
+                            <i class="fa-solid fa-star text-emerald-500 mt-0.5"></i>
+                            <span class="font-medium leading-relaxed">{{ strength }}</span>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
+                <div class="p-4 rounded-xl border border-slate-100 bg-slate-50 space-y-2 text-xs">
+                    <span class="font-bold text-slate-800 block">Resume Keyword Recommendations:</span>
+                    <p class="text-slate-600">Ensure your project descriptions use impactful metrics. Try our ATS Resume Matcher to benchmark your CV against target job descriptions.</p>
+                    <a href="{{ url_for('resume_matcher') }}" class="inline-block text-xs font-bold text-indigo-600 hover:text-indigo-800">
+                        Scan Resume Keywords Now &rarr;
+                    </a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- 30-DAY PERSONALIZED PREPARATION ROADMAP -->
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-8 space-y-6">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-slate-100 pb-4">
+            <div>
+                <h3 class="text-xl font-extrabold text-slate-900 flex items-center">
+                    <i class="fa-solid fa-route text-indigo-600 mr-2.5"></i>30-Day Targeted Placement Sprint Roadmap
+                </h3>
+                <p class="text-xs text-slate-500 mt-1">Structured 4-week preparation plan customized to bridge your identified gaps before placement season.</p>
+            </div>
+            <span class="text-xs font-semibold px-3 py-1 bg-emerald-50 text-emerald-700 rounded-lg border border-emerald-100">
+                <i class="fa-solid fa-flag-checkered mr-1"></i>4-Week Action Sprint
+            </span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {% for week in gaps_and_roadmap.roadmap %}
+                <div class="bg-slate-50/70 border border-slate-200 rounded-2xl p-5 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center space-x-2 text-xs font-bold text-indigo-700 mb-1">
+                            <span class="w-6 h-6 rounded-full bg-indigo-100 flex items-center justify-center text-[11px]">{{ loop.index }}</span>
+                            <span>{{ week.week.split(':')[0] }}</span>
+                        </div>
+                        <h4 class="font-bold text-slate-900 text-sm mb-3">{{ week.focus }}</h4>
+                        
+                        <ul class="space-y-2.5 text-xs text-slate-600">
+                            {% for day in week.days %}
+                                <li class="p-2 rounded-lg bg-white border border-slate-100 shadow-2xs">
+                                    <span class="font-bold text-indigo-600 block text-[10px] uppercase">{{ day.day }}</span>
+                                    <span>{{ day.task }}</span>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+</div>
+
+<!-- Radar Chart Script -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('roleRadarChart');
+    if (!ctx) return;
+
+    const candidateDims = {{ role_analysis.candidate_dimensions | tojson }};
+    const benchmarkDims = {{ role_analysis.benchmark | tojson }};
+
+    const labels = ["DSA", "System Design", "Core Languages", "Databases", "Cloud/DevOps", "Aptitude/Soft Skills"];
+    const candidateData = labels.map(l => candidateDims[l] || 0);
+    const benchmarkData = labels.map(l => benchmarkDims[l] || 0);
+
+    new Chart(ctx, {
+        type: 'radar',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: '{{ student.name }} (Actual)',
+                    data: candidateData,
+                    fill: true,
+                    backgroundColor: 'rgba(79, 70, 229, 0.2)',
+                    borderColor: '#4f46e5',
+                    pointBackgroundColor: '#4f46e5',
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: '#4f46e5',
+                    borderWidth: 2
+                },
+                {
+                    label: '{{ role_analysis.target_role }} (Industry Benchmark)',
+                    data: benchmarkData,
+                    fill: true,
+                    backgroundColor: 'rgba(245, 158, 11, 0.15)',
+                    borderColor: '#f59e0b',
+                    pointBackgroundColor: '#f59e0b',
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: '#f59e0b',
+                    borderWidth: 2,
+                    borderDash: [5, 5]
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                r: {
+                    angleLines: { color: 'rgba(226, 232, 240, 0.8)' },
+                    grid: { color: 'rgba(226, 232, 240, 0.8)' },
+                    suggestedMin: 20,
+                    suggestedMax: 100,
+                    pointLabels: {
+                        font: { size: 11, family: 'Plus Jakarta Sans', weight: 'bold' },
+                        color: '#475569'
+                    },
+                    ticks: {
+                        backdropColor: 'transparent',
+                        stepSize: 20,
+                        color: '#94a3b8',
+                        font: { size: 9 }
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        font: { size: 11, family: 'Plus Jakarta Sans' },
+                        boxWidth: 12
+                    }
+                }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}
