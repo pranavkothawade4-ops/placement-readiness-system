@@ -414,7 +414,7 @@ def tpo_add_student():
 
         save_student_assessment(student_data)
 
-        flash(f"Student {name} ({roll_no}) was successfully added by TPO (Status: {status.upper()}). Initial Password: {password}", "success")
+        flash(f"Student {name} ({roll_no}) was successfully added by TPO and registered with status: {status.upper()}.", "success")
         return redirect(url_for('tpo_dashboard'))
 
     except Exception as e:
